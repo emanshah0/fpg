@@ -122,6 +122,20 @@ const CustomNode = ({
     onDelete(id);
   };
 
+  const handleDataTypeChangeLocal = (e) => {
+    handleDataTypeChange(e);
+  };
+
+  const handleValueChange = (e) => {
+    const inputValue = e.target.value;
+    let processedValue = inputValue;
+    if (!isConnected) {
+      // Replace spaces with underscores
+      processedValue = inputValue.replace(/\s+/g, '_');
+    }
+    onChange(id, 'value', processedValue);
+  };
+
   return (
     <div className="custom-node">
       {/* Target Handle */}
@@ -152,7 +166,7 @@ const CustomNode = ({
                   type="radio"
                   value="single"
                   checked={dataType === 'single'}
-                  onChange={handleDataTypeChange}
+                  onChange={handleDataTypeChangeLocal}
                 />
                 Single Input
               </label>
@@ -161,7 +175,7 @@ const CustomNode = ({
                   type="radio"
                   value="range"
                   checked={dataType === 'range'}
-                  onChange={handleDataTypeChange}
+                  onChange={handleDataTypeChangeLocal}
                 />
                 Range/List
               </label>
@@ -176,6 +190,7 @@ const CustomNode = ({
             id={`value-${id}`}
             name="value"
             value={value}
+            onChange={handleValueChange}
             className="nodrag"
             placeholder="Enter value"
             disabled={isConnected} // Disable if connected
