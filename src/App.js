@@ -7,7 +7,6 @@ import ReactFlow, {
   useNodesState,
   useEdgesState,
   addEdge,
-  removeElements,
   getConnectedEdges,
   Position,
 } from 'react-flow-renderer';
@@ -15,14 +14,10 @@ import CustomNode from './components/CustomNode';
 import './App.css';
 import { PROCESS_LIST } from './components/Processes';
 
-const initialNodes = [
-  // Optionally, define initial nodes here
-];
-
 const nodeTypes = { customNode: CustomNode };
 
 function App() {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   const onConnect = useCallback(
@@ -65,8 +60,10 @@ function App() {
         const targetNode = nodes.find((node) => node.id === edge.target);
         if (targetNode) {
           // Remove the source label from the target node's sourceLabels array
+          const sourceNode = nodes.find((n) => n.id === edge.source);
+          const sourceLabel = sourceNode ? sourceNode.data.label : 'Unknown';
           const updatedSourceLabels = targetNode.data.sourceLabels.filter(
-            (label) => label !== nodes.find((n) => n.id === edge.source)?.data.label
+            (label) => label !== sourceLabel
           );
           setNodes((nds) =>
             nds.map((node) =>
@@ -186,6 +183,12 @@ function App() {
     [setNodes, setEdges]
   );
 
+  // Clear all nodes and edges
+  const clearAll = useCallback(() => {
+    setNodes([]);
+    setEdges([]);
+  }, [setNodes, setEdges]);
+
   return (
     <div style={{ height: '100vh' }}>
       <div className="button-group">
@@ -205,6 +208,9 @@ function App() {
           onChange={loadFlow}
           style={{ display: 'none' }}
         />
+        <button onClick={clearAll} className="clear-all-button">
+          Clear All Nodes
+        </button>
       </div>
       <ReactFlowProvider>
         <ReactFlow

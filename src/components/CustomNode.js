@@ -1,4 +1,3 @@
-// src/components/CustomNode.js
 import React, { memo, useEffect } from 'react';
 import { Handle, Position } from 'react-flow-renderer';
 import './CustomNode.css';
