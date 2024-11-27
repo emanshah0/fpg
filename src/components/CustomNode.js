@@ -1,10 +1,39 @@
 // src/components/CustomNode.js
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 import { Handle, Position } from 'react-flow-renderer';
 import './CustomNode.css';
 
 const CustomNode = ({ id, data }) => {
-  const { label, value, onChange, onDelete, isConnected, processList, sourceLabel } = data;
+  const { label, value, onChange, onDelete, isConnected, processList, sourceLabels } = data;
+
+  // Function to simulate processing based on selected process
+  const processData = (sources, process) => {
+    if (!process) return 'None';
+
+    // Simulate processing based on the selected function
+    switch (process) {
+      case 'Add':
+        // Example: Concatenate source labels for display
+        return `Add(${sources.join(', ')})`;
+      case 'Subtract':
+        return `Subtract(${sources.join(', ')})`;
+      case 'Multiply':
+        return `Multiply(${sources.join(', ')})`;
+      case 'Divide':
+        return `Divide(${sources.join(', ')})`;
+      default:
+        return `Process(${sources.join(', ')})`;
+    }
+  };
+
+  // Update the value when sourceLabels or process changes
+  useEffect(() => {
+    if (isConnected && sourceLabels.length > 0) {
+      const processedValue = processData(sourceLabels, data.process);
+      onChange(id, 'value', processedValue);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sourceLabels, data.process]);
 
   const handleLabelChange = (e) => {
     onChange(id, 'label', e.target.value);
@@ -22,7 +51,7 @@ const CustomNode = ({ id, data }) => {
     <div className="custom-node">
       {/* Target Handle */}
       <Handle type="target" position={Position.Top} className="handle" />
-      
+
       <div className="node-content">
         {/* Label Input */}
         <div className="input-group">
@@ -44,11 +73,7 @@ const CustomNode = ({ id, data }) => {
           <input
             id={`value-${id}`}
             name="value"
-            value={
-              isConnected
-                ? `${data.process ? data.process : 'Process'}(${sourceLabel || 'Unknown'})`
-                : value
-            }
+            value={value}
             className="nodrag"
             placeholder="Enter value"
             disabled={isConnected} // Disable if connected

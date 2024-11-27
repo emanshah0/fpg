@@ -35,7 +35,7 @@ function App() {
       const sourceNode = nodes.find((node) => node.id === connection.source);
       const sourceLabel = sourceNode ? sourceNode.data.label : 'Unknown';
 
-      // Update the target node's data with the source label
+      // Update the target node's sourceLabels array
       setNodes((nds) =>
         nds.map((node) =>
           node.id === connection.target
@@ -43,7 +43,7 @@ function App() {
                 ...node,
                 data: {
                   ...node.data,
-                  sourceLabel: sourceLabel,
+                  sourceLabels: [...node.data.sourceLabels, sourceLabel],
                 },
               }
             : node
@@ -58,11 +58,16 @@ function App() {
       event.preventDefault();
       const confirmDelete = window.confirm('Do you want to delete this connection?');
       if (confirmDelete) {
+        // Remove the edge from edges state
         setEdges((eds) => eds.filter((e) => e.id !== edge.id));
 
-        // Optionally, reset the target node's sourceLabel if no other incoming edges exist
-        const connectedEdges = edges.filter((e) => e.target === edge.target && e.id !== edge.id);
-        if (connectedEdges.length === 0) {
+        // Find the target node
+        const targetNode = nodes.find((node) => node.id === edge.target);
+        if (targetNode) {
+          // Remove the source label from the target node's sourceLabels array
+          const updatedSourceLabels = targetNode.data.sourceLabels.filter(
+            (label) => label !== nodes.find((n) => n.id === edge.source)?.data.label
+          );
           setNodes((nds) =>
             nds.map((node) =>
               node.id === edge.target
@@ -70,8 +75,9 @@ function App() {
                     ...node,
                     data: {
                       ...node.data,
-                      sourceLabel: '',
-                      process: '',
+                      sourceLabels: updatedSourceLabels,
+                      process:
+                        updatedSourceLabels.length === 0 ? '' : node.data.process,
                     },
                   }
                 : node
@@ -80,7 +86,7 @@ function App() {
         }
       }
     },
-    [edges, setEdges, setNodes]
+    [edges, nodes, setEdges, setNodes]
   );
 
   const addNode = useCallback(() => {
@@ -93,7 +99,7 @@ function App() {
         label: `Node ${newNodeId}`,
         value: `Value ${newNodeId}`,
         process: '', // Initialize with no process
-        sourceLabel: '', // Initialize with no source label
+        sourceLabels: [], // Initialize with no source labels
       },
     };
     setNodes((nds) => nds.concat(newNode));
