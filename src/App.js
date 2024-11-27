@@ -1,5 +1,5 @@
 // src/App.js
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import ReactFlow, {
   Controls,
   Background,
@@ -14,11 +14,54 @@ import CustomNode from './components/CustomNode';
 import './App.css';
 import { PROCESS_LIST } from './components/Processes';
 
+// Helper function to generate labels up to 2 letters (A-Z, AA-ZZ)
+const generateLabels = () => {
+  const labels = [];
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const maxLength = 2;
+
+  const recurse = (current) => {
+    if (current.length >= maxLength) return;
+    for (let i = 0; i < letters.length; i++) {
+      const newLabel = current + letters[i];
+      labels.push(newLabel);
+      recurse(newLabel);
+    }
+  };
+
+  recurse('');
+  return labels;
+};
+
+const ALL_LABELS = generateLabels();
+
 const nodeTypes = { customNode: CustomNode };
 
 function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [usedRanges, setUsedRanges] = useState([]); // Global state for used ranges
+
+  // Handler to allocate ranges
+  const allocateRanges = useCallback(
+    (newRanges) => {
+      setUsedRanges((prev) => [...prev, ...newRanges]);
+    },
+    [setUsedRanges]
+  );
+
+  // Handler to deallocate ranges
+  const deallocateRanges = useCallback(
+    (removedRanges) => {
+      setUsedRanges((prev) => prev.filter((range) => !removedRanges.includes(range)));
+    },
+    [setUsedRanges]
+  );
+
+  const availableLabels = useMemo(
+    () => ALL_LABELS.filter((label) => !usedRanges.includes(label)),
+    [usedRanges]
+  );
 
   const onConnect = useCallback(
     (connection) => {
@@ -59,12 +102,15 @@ function App() {
         // Find the target node
         const targetNode = nodes.find((node) => node.id === edge.target);
         if (targetNode) {
-          // Remove the source label from the target node's sourceLabels array
+          // Find the source node's label
           const sourceNode = nodes.find((n) => n.id === edge.source);
           const sourceLabel = sourceNode ? sourceNode.data.label : 'Unknown';
+
+          // Remove the source label from the target node's sourceLabels array
           const updatedSourceLabels = targetNode.data.sourceLabels.filter(
             (label) => label !== sourceLabel
           );
+
           setNodes((nds) =>
             nds.map((node) =>
               node.id === edge.target
@@ -73,13 +119,29 @@ function App() {
                     data: {
                       ...node.data,
                       sourceLabels: updatedSourceLabels,
-                      process:
-                        updatedSourceLabels.length === 0 ? '' : node.data.process,
+                      process: updatedSourceLabels.length === 0 ? '' : node.data.process,
                     },
                   }
                 : node
             )
           );
+
+          // If no other incoming connections, reset process
+          if (updatedSourceLabels.length === 0 && targetNode.data.process) {
+            setNodes((nds) =>
+              nds.map((node) =>
+                node.id === edge.target
+                  ? {
+                      ...node,
+                      data: {
+                        ...node.data,
+                        process: '',
+                      },
+                    }
+                  : node
+              )
+            );
+          }
         }
       }
     },
@@ -97,6 +159,9 @@ function App() {
         value: `Value ${newNodeId}`,
         process: '', // Initialize with no process
         sourceLabels: [], // Initialize with no source labels
+        dataType: 'single', // Default data type
+        from: '', // Initialize FROM for range
+        to: '', // Initialize TO for range
       },
     };
     setNodes((nds) => nds.concat(newNode));
@@ -126,13 +191,19 @@ function App() {
       const nodeToDelete = nodes.find((n) => n.id === nodeId);
       if (!nodeToDelete) return;
 
+      // Deallocate ranges if the node had a range selection
+      if (nodeToDelete.data.dataType === 'range' && nodeToDelete.data.from && nodeToDelete.data.to) {
+        const range = `${nodeToDelete.data.from}:${nodeToDelete.data.to}`;
+        deallocateRanges([range]);
+      }
+
       const connectedEdges = getConnectedEdges([nodeToDelete], edges);
       setNodes((nds) => nds.filter((node) => node.id !== nodeId));
       setEdges((eds) =>
         eds.filter((edge) => !connectedEdges.some((ce) => ce.id === edge.id))
       );
     },
-    [nodes, edges, setNodes, setEdges]
+    [nodes, edges, setNodes, setEdges, deallocateRanges]
   );
 
   // Determine which nodes have incoming edges
@@ -167,6 +238,12 @@ function App() {
         try {
           const flow = JSON.parse(e.target.result);
           if (flow.nodes && flow.edges) {
+            // Extract all ranges to update usedRanges
+            const selectedRanges = flow.nodes
+              .filter((node) => node.data.dataType === 'range' && node.data.from && node.data.to)
+              .map((node) => `${node.data.from}:${node.data.to}`);
+            setUsedRanges(selectedRanges);
+
             setNodes(flow.nodes);
             setEdges(flow.edges);
           } else {
@@ -187,7 +264,8 @@ function App() {
   const clearAll = useCallback(() => {
     setNodes([]);
     setEdges([]);
-  }, [setNodes, setEdges]);
+    setUsedRanges([]);
+  }, [setNodes, setEdges, setUsedRanges]);
 
   return (
     <div style={{ height: '100vh' }}>
@@ -222,6 +300,9 @@ function App() {
               onDelete: deleteNode,
               isConnected: nodesWithIncoming.has(node.id),
               processList: PROCESS_LIST,
+              availableLabels: availableLabels,
+              allocateRanges: allocateRanges,
+              deallocateRanges: deallocateRanges,
             },
           }))}
           edges={edges}
