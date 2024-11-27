@@ -1,5 +1,5 @@
 // src/App.js
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from "react";
 import ReactFlow, {
   Controls,
   Background,
@@ -8,15 +8,15 @@ import ReactFlow, {
   useEdgesState,
   addEdge,
   getConnectedEdges,
-} from 'react-flow-renderer';
-import CustomNode from './components/CustomNode';
-import './App.css';
-import { PROCESS_LIST } from './components/Processes'; // Ensure this path is correct
+} from "react-flow-renderer";
+import CustomNode from "./components/CustomNode";
+import "./App.css";
+import { PROCESS_LIST } from "./components/Processes"; // Ensure this path is correct
 
 // Helper function to generate labels up to 2 letters (A-Z, AA-ZZ)
 const generateLabels = () => {
   const labels = [];
-  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const maxLength = 2;
 
   const recurse = (current) => {
@@ -28,7 +28,7 @@ const generateLabels = () => {
     }
   };
 
-  recurse('');
+  recurse("");
   return labels;
 };
 
@@ -43,6 +43,8 @@ function App() {
   // State to track used single input values and ranges
   const [usedSingleValues, setUsedSingleValues] = useState([]);
   const [usedRanges, setUsedRanges] = useState([]);
+
+  const proOptions = { hideAttribution: true };
 
   // Handler to allocate a single input value
   const allocateSingleValue = useCallback(
@@ -84,12 +86,16 @@ function App() {
   // Function to handle connections
   const onConnect = useCallback(
     (connection) => {
-      const newEdge = { ...connection, id: `edge-${Date.now()}`, animated: false };
+      const newEdge = {
+        ...connection,
+        id: `edge-${Date.now()}`,
+        animated: false,
+      };
       setEdges((eds) => addEdge(newEdge, eds));
 
       // Find the source node's value
       const sourceNode = nodes.find((node) => node.id === connection.source);
-      const sourceValue = sourceNode ? sourceNode.data.value : 'Unknown';
+      const sourceValue = sourceNode ? sourceNode.data.value : "Unknown";
 
       // Update the target node's sourceLabels array
       setNodes((nds) =>
@@ -113,7 +119,9 @@ function App() {
   const onEdgeClick = useCallback(
     (event, edge) => {
       event.preventDefault();
-      const confirmDelete = window.confirm('Do you want to delete this connection?');
+      const confirmDelete = window.confirm(
+        "Do you want to delete this connection?"
+      );
       if (confirmDelete) {
         // Remove the edge
         setEdges((eds) => eds.filter((e) => e.id !== edge.id));
@@ -123,7 +131,7 @@ function App() {
         if (targetNode) {
           // Find the source node's value
           const sourceNode = nodes.find((n) => n.id === edge.source);
-          const sourceValue = sourceNode ? sourceNode.data.value : 'Unknown';
+          const sourceValue = sourceNode ? sourceNode.data.value : "Unknown";
 
           // Remove the source value from the target node's sourceLabels array
           const updatedSourceLabels = targetNode.data.sourceLabels.filter(
@@ -138,7 +146,10 @@ function App() {
                     data: {
                       ...node.data,
                       sourceLabels: updatedSourceLabels,
-                      process: updatedSourceLabels.length === 0 ? '' : node.data.process,
+                      process:
+                        updatedSourceLabels.length === 0
+                          ? ""
+                          : node.data.process,
                     },
                   }
                 : node
@@ -154,7 +165,7 @@ function App() {
                       ...node,
                       data: {
                         ...node.data,
-                        process: '',
+                        process: "",
                       },
                     }
                   : node
@@ -172,16 +183,16 @@ function App() {
     const newNodeId = (nodes.length + 1).toString();
     const newNode = {
       id: newNodeId,
-      type: 'customNode',
+      type: "customNode",
       position: { x: Math.random() * 400, y: Math.random() * 400 },
       data: {
         label: `Node ${newNodeId}`,
         value: `Value_${newNodeId}`, // Initialize with no spaces
-        process: '', // Initialize with no process
+        process: "", // Initialize with no process
         sourceLabels: [], // Initialize with no source labels
-        dataType: 'single', // Default data type
-        from: '', // Initialize FROM for range
-        to: '', // Initialize TO for range
+        dataType: "single", // Default data type
+        from: "", // Initialize FROM for range
+        to: "", // Initialize TO for range
       },
     };
     setNodes((nds) => nds.concat(newNode));
@@ -197,18 +208,20 @@ function App() {
             const newData = { ...node.data };
 
             // Handle uniqueness based on field and data type
-            if (field === 'value' && node.data.dataType === 'single') {
+            if (field === "value" && node.data.dataType === "single") {
               const newValue = value;
+
+              // Deallocate the old value first
+              if (node.data.value && node.data.value !== newValue) {
+                deallocateSingleValue(node.data.value);
+              }
 
               // Check if the newValue is already used
               if (usedSingleValues.includes(newValue)) {
-                alert(`The value "${newValue}" is already in use. Please choose a unique value.`);
+                alert(
+                  `The value "${newValue}" is already in use. Please choose a unique value.`
+                );
                 return node; // Prevent update
-              }
-
-              // Deallocate the old value
-              if (node.data.value && node.data.value !== newValue) {
-                deallocateSingleValue(node.data.value);
               }
 
               // Allocate the new value
@@ -217,26 +230,28 @@ function App() {
               newData.value = newValue;
             }
 
-            if (field === 'from' || field === 'to') {
-              const from = field === 'from' ? value : node.data.from;
-              const to = field === 'to' ? value : node.data.to;
+            if (field === "from" || field === "to") {
+              const from = field === "from" ? value : node.data.from;
+              const to = field === "to" ? value : node.data.to;
 
               // Only proceed if both from and to are set
               if (from && to) {
                 const newRange = `${from}:${to}`;
 
-                // Check if the newRange is already used
-                if (usedRanges.includes(newRange)) {
-                  alert(`The range "${newRange}" is already in use. Please choose a unique range.`);
-                  return node; // Prevent update
-                }
-
-                // Deallocate the old range
+                // Deallocate the old range first
                 if (node.data.from && node.data.to) {
                   const oldRange = `${node.data.from}:${node.data.to}`;
                   if (oldRange !== newRange) {
                     deallocateRange(oldRange);
                   }
+                }
+
+                // Check if the newRange is already used
+                if (usedRanges.includes(newRange)) {
+                  alert(
+                    `The range "${newRange}" is already in use. Please choose a unique range.`
+                  );
+                  return node; // Prevent update
                 }
 
                 // Allocate the new range
@@ -247,7 +262,7 @@ function App() {
                 newData.value = newRange;
               } else {
                 // If one of from or to is empty, just update
-                if (field === 'from') {
+                if (field === "from") {
                   newData.from = from;
                 } else {
                   newData.to = to;
@@ -255,37 +270,41 @@ function App() {
               }
             }
 
-            if (field === 'dataType') {
+            if (field === "dataType") {
               newData.dataType = value;
 
-              if (value === 'single') {
+              if (value === "single") {
                 // If switching to single, deallocate any existing range
                 if (node.data.from && node.data.to) {
                   const oldRange = `${node.data.from}:${node.data.to}`;
                   deallocateRange(oldRange);
-                  newData.from = '';
-                  newData.to = '';
+                  newData.from = "";
+                  newData.to = "";
                   newData.value = node.data.value; // Retain the single value
                 }
-              } else if (value === 'range') {
+              } else if (value === "range") {
                 // If switching to range, deallocate any existing single value
-                if (node.data.dataType === 'single' && node.data.value) {
+                if (node.data.dataType === "single" && node.data.value) {
                   deallocateSingleValue(node.data.value);
-                  newData.value = ''; // Reset value for new range
+                  newData.value = ""; // Reset value for new range
                 }
               }
             }
 
-            if (field === 'process') {
+            if (field === "process") {
               newData.process = value;
 
               // Update the value based on the selected process and sourceLabels
               if (value && node.data.sourceLabels.length > 0) {
-                const processedValue = `${value}(${node.data.sourceLabels.join(', ')})`;
+                const processedValue = `${value}(${node.data.sourceLabels.join(
+                  ", "
+                )})`;
                 newData.value = processedValue;
               } else if (!value && node.data.sourceLabels.length > 0) {
                 // If no process is selected, default to "Process(x)"
-                const processedValue = `Process(${node.data.sourceLabels.join(', ')})`;
+                const processedValue = `Process(${node.data.sourceLabels.join(
+                  ", "
+                )})`;
                 newData.value = processedValue;
               }
             }
@@ -316,17 +335,19 @@ function App() {
       if (!nodeToDelete) return;
 
       // Deallocate single value or range based on dataType
-      if (nodeToDelete.data.dataType === 'single' && nodeToDelete.data.value) {
+      if (nodeToDelete.data.dataType === "single" && nodeToDelete.data.value) {
         deallocateSingleValue(nodeToDelete.data.value);
       }
 
-      if (nodeToDelete.data.dataType === 'range' && nodeToDelete.data.value) {
+      if (nodeToDelete.data.dataType === "range" && nodeToDelete.data.value) {
         deallocateRange(nodeToDelete.data.value);
       }
 
       const connectedEdges = getConnectedEdges([nodeToDelete], edges);
       setNodes((nds) => nds.filter((node) => node.id !== nodeId));
-      setEdges((eds) => eds.filter((edge) => !connectedEdges.some((ce) => ce.id === edge.id)));
+      setEdges((eds) =>
+        eds.filter((edge) => !connectedEdges.some((ce) => ce.id === edge.id))
+      );
     },
     [nodes, edges, setNodes, setEdges, deallocateSingleValue, deallocateRange]
   );
@@ -346,11 +367,11 @@ function App() {
       edges,
     };
     const flowJSON = JSON.stringify(flow, null, 2);
-    const blob = new Blob([flowJSON], { type: 'application/json' });
+    const blob = new Blob([flowJSON], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
-    link.download = 'flow.json';
+    link.download = "flow.json";
     link.click();
     URL.revokeObjectURL(url);
   }, [nodes, edges]);
@@ -365,11 +386,15 @@ function App() {
           if (flow.nodes && flow.edges) {
             // Extract all used single values and ranges from loaded nodes
             const loadedSingleValues = flow.nodes
-              .filter((node) => node.data.dataType === 'single' && node.data.value)
+              .filter(
+                (node) => node.data.dataType === "single" && node.data.value
+              )
               .map((node) => node.data.value);
 
             const loadedRanges = flow.nodes
-              .filter((node) => node.data.dataType === 'range' && node.data.value)
+              .filter(
+                (node) => node.data.dataType === "range" && node.data.value
+              )
               .map((node) => node.data.value);
 
             setUsedSingleValues(loadedSingleValues);
@@ -378,10 +403,10 @@ function App() {
             setNodes(flow.nodes);
             setEdges(flow.edges);
           } else {
-            alert('Invalid flow format');
+            alert("Invalid flow format");
           }
         } catch (error) {
-          alert('Error reading flow file');
+          alert("Error reading flow file");
         }
       };
       if (event.target.files[0]) {
@@ -400,7 +425,7 @@ function App() {
   }, [setNodes, setEdges, setUsedSingleValues, setUsedRanges]);
 
   return (
-    <div style={{ height: '100vh' }}>
+    <div style={{ height: "100vh" }}>
       <div className="button-group">
         <button onClick={addNode} className="add-node-button">
           Add Node
@@ -416,7 +441,7 @@ function App() {
           type="file"
           accept=".json"
           onChange={loadFlow}
-          style={{ display: 'none' }}
+          style={{ display: "none" }}
         />
         <button onClick={clearAll} className="clear-all-button">
           Clear All Nodes
@@ -442,7 +467,8 @@ function App() {
           onEdgeClick={onEdgeClick}
           nodeTypes={memoizedNodeTypes}
           fitView
-          style={{ backgroundColor: '#1e1e1e' }}
+          style={{ backgroundColor: "#1e1e1e" }}
+          proOptions={proOptions}
         >
           <Background color="#555" gap={16} />
           <Controls />

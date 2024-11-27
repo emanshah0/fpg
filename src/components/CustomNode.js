@@ -34,7 +34,7 @@ const CustomNode = ({
       setTo('');
       onChange(id, 'from', '');
       onChange(id, 'to', '');
-      onChange(id, 'value', data.value); // Retain the single value
+      // Retain the single value
     } else if (selectedType === 'range') {
       // Clear single input value
       onChange(id, 'value', '');
