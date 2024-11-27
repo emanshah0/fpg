@@ -15,14 +15,12 @@ const CustomNode = ({
     isConnected,
     processList,
     availableLabels,
-    allocateRanges,
-    deallocateRanges,
-    sourceLabels,
   } = data;
 
   const [dataType, setDataType] = useState(data.dataType || 'single'); // 'single' or 'range'
   const [from, setFrom] = useState(data.from || '');
   const [to, setTo] = useState(data.to || '');
+  const [error, setError] = useState('');
 
   // Handle data type change
   const handleDataTypeChange = (e) => {
@@ -31,15 +29,15 @@ const CustomNode = ({
     onChange(id, 'dataType', selectedType);
 
     if (selectedType === 'single') {
-      // Deallocate previous range if any
-      if (from && to) {
-        const range = `${from}:${to}`;
-        deallocateRanges([range]);
-        setFrom('');
-        setTo('');
-        onChange(id, 'from', '');
-        onChange(id, 'to', '');
-      }
+      // Clear range fields
+      setFrom('');
+      setTo('');
+      onChange(id, 'from', '');
+      onChange(id, 'to', '');
+      onChange(id, 'value', data.value); // Retain the single value
+    } else if (selectedType === 'range') {
+      // Clear single input value
+      onChange(id, 'value', '');
     }
   };
 
@@ -48,6 +46,7 @@ const CustomNode = ({
     const input = e.target.value.toUpperCase();
     if (/^[A-Z]{0,2}$/.test(input)) {
       setFrom(input);
+      onChange(id, 'from', input);
     }
   };
 
@@ -56,88 +55,67 @@ const CustomNode = ({
     const input = e.target.value.toUpperCase();
     if (/^[A-Z]{0,2}$/.test(input)) {
       setTo(input);
+      onChange(id, 'to', input);
     }
   };
 
-  // Allocate range when FROM and TO are set
-  useEffect(() => {
-    if (dataType === 'range' && from && to) {
-      const range = `${from}:${to}`;
-      // Check if range is already used (should be handled by App.js)
-      allocateRanges([range]);
-      onChange(id, 'from', from);
-      onChange(id, 'to', to);
-      // Update value to display the range
-      onChange(id, 'value', range);
-    }
-
-    // Cleanup function to deallocate range if component unmounts or range changes
-    return () => {
-      if (dataType === 'range' && from && to) {
-        const range = `${from}:${to}`;
-        deallocateRanges([range]);
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [from, to, dataType]);
-
-  // Update node's value when sourceLabels or process changes
-  useEffect(() => {
-    if (isConnected && sourceLabels.length > 0) {
-      const processedValue = processData(sourceLabels, data.process);
-      onChange(id, 'value', processedValue);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sourceLabels, data.process]);
-
-  // Function to simulate processing based on selected process
-  const processData = (sources, process) => {
-    if (!process) return 'None';
-
-    // Simulate processing based on the selected function
-    switch (process) {
-      case 'Add':
-        // Example: Concatenate source labels for display
-        return `Add(${sources.join(', ')})`;
-      case 'Subtract':
-        return `Subtract(${sources.join(', ')})`;
-      case 'Multiply':
-        return `Multiply(${sources.join(', ')})`;
-      case 'Divide':
-        return `Divide(${sources.join(', ')})`;
-      default:
-        return `Process(${sources.join(', ')})`;
-    }
-  };
-
+  // Handle Label change
   const handleLabelChange = (e) => {
     onChange(id, 'label', e.target.value);
   };
 
+  // Handle Value change with space replacement for single input
+  const handleValueChange = (e) => {
+    let inputValue = e.target.value;
+    if (!isConnected && dataType === 'single') {
+      // Replace spaces with underscores
+      inputValue = inputValue.replace(/\s+/g, '_');
+    }
+    onChange(id, 'value', inputValue);
+  };
+
+  // Handle Process change
   const handleProcessChange = (e) => {
     onChange(id, 'process', e.target.value);
   };
 
+  // Handle Delete button
   const handleDelete = () => {
     onDelete(id);
   };
 
-  const handleDataTypeChangeLocal = (e) => {
-    handleDataTypeChange(e);
-  };
-
-  const handleValueChange = (e) => {
-    const inputValue = e.target.value;
-    let processedValue = inputValue;
-    if (!isConnected) {
-      // Replace spaces with underscores
-      processedValue = inputValue.replace(/\s+/g, '_');
+  // Effect to validate range uniqueness and logical correctness
+  useEffect(() => {
+    if (dataType === 'range' && from && to) {
+      const range = `${from}:${to}`;
+      // Simple validation: FROM should not be greater than TO alphabetically
+      if (from > to) {
+        setError('"From" value cannot be greater than "To" value.');
+      } else {
+        setError('');
+      }
+    } else {
+      setError('');
     }
-    onChange(id, 'value', processedValue);
-  };
+  }, [from, to, dataType]);
+
+  // Effect to update value based on process and sourceLabels
+  useEffect(() => {
+    if (isConnected && data.sourceLabels.length > 0) {
+      if (data.process) {
+        const processedValue = `${data.process}(${data.sourceLabels.join(', ')})`;
+        onChange(id, 'value', processedValue);
+      } else {
+        // If process is not selected, default to "Process(x)"
+        const processedValue = `Process(${data.sourceLabels.join(', ')})`;
+        onChange(id, 'value', processedValue);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.sourceLabels, data.process, isConnected]);
 
   return (
-    <div className="custom-node">
+    <div className={`custom-node ${error ? 'error' : ''}`}>
       {/* Target Handle */}
       <Handle type="target" position={Position.Top} className="handle" />
 
@@ -166,7 +144,7 @@ const CustomNode = ({
                   type="radio"
                   value="single"
                   checked={dataType === 'single'}
-                  onChange={handleDataTypeChangeLocal}
+                  onChange={handleDataTypeChange}
                 />
                 Single Input
               </label>
@@ -175,7 +153,7 @@ const CustomNode = ({
                   type="radio"
                   value="range"
                   checked={dataType === 'range'}
-                  onChange={handleDataTypeChangeLocal}
+                  onChange={handleDataTypeChange}
                 />
                 Range/List
               </label>
@@ -225,6 +203,7 @@ const CustomNode = ({
               />
             </div>
             <small>Use uppercase letters only. Maximum 2 letters.</small>
+            {error && <div className="error-message">{error}</div>}
           </>
         )}
 

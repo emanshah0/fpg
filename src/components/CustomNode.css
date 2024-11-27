@@ -12,6 +12,10 @@
   flex-direction: column;
 }
 
+.custom-node.error {
+  border-color: #ff4d4d; /* Red border to indicate error */
+}
+
 .node-content {
   display: flex;
   flex-direction: column;
@@ -92,4 +96,10 @@
 small {
   color: #aaa;
   font-size: 10px;
+}
+
+.error-message {
+  color: #ff4d4d;
+  font-size: 12px;
+  margin-top: 4px;
 }
