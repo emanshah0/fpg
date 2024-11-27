@@ -1,9 +1,11 @@
+/* src/components/CustomNode.css */
+
 .custom-node {
   padding: 12px;
   border: 1px solid #555;
   border-radius: 8px;
   background-color: #2e2e2e;
-  width: 200px;
+  width: 220px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
   color: #f0f0f0;
   display: flex;
@@ -34,7 +36,8 @@
   color: #ccc;
 }
 
-.input-group input {
+.input-group input,
+.input-group select {
   width: 100%;
   padding: 6px 8px;
   box-sizing: border-box;
@@ -44,9 +47,22 @@
   color: #f0f0f0;
 }
 
-.input-group input:focus {
+.input-group input:disabled,
+.input-group select:disabled {
+  background-color: #555;
+  color: #888;
+}
+
+.input-group input:focus,
+.input-group select:focus {
   outline: none;
   border-color: #888;
+}
+
+.process-indicator {
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #ffcc00;
 }
 
 .delete-button {

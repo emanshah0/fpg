@@ -7,11 +7,18 @@ body {
   color: #f0f0f0;
 }
 
-.add-node-button {
+.button-group {
   position: absolute;
   z-index: 10;
-  padding: 10px 15px;
+  display: flex;
+  gap: 10px;
   margin: 10px;
+}
+
+.add-node-button,
+.save-flow-button,
+.load-flow-button {
+  padding: 10px 15px;
   background-color: #3a3a3a;
   color: #f0f0f0;
   border: none;
@@ -21,7 +28,9 @@ body {
   transition: background-color 0.3s ease;
 }
 
-.add-node-button:hover {
+.add-node-button:hover,
+.save-flow-button:hover,
+.load-flow-button:hover {
   background-color: #575757;
 }
 
