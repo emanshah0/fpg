@@ -1,5 +1,5 @@
 // src/App.js
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo } from "react";
 import ReactFlow, {
   Controls,
   Background,
@@ -9,9 +9,11 @@ import ReactFlow, {
   addEdge,
   getConnectedEdges,
 } from "react-flow-renderer";
-import CustomNode from "./components/CustomNode";
+import InputNode from "./components/InputNode";
+import ProcessorNode from "./components/ProcessorNode";
 import "./App.css";
 import { PROCESS_LIST } from "./components/Processes"; // Ensure this path is correct
+import useValueManager from "./hooks/useValueManager"; // Import the custom hook
 
 // Helper function to generate labels up to 2 letters (A-Z, AA-ZZ)
 const generateLabels = () => {
@@ -34,49 +36,25 @@ const generateLabels = () => {
 
 const ALL_LABELS = generateLabels();
 
-const nodeTypes = { customNode: CustomNode };
+const nodeTypes = { inputNode: InputNode, processorNode: ProcessorNode };
 
 function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-  // State to track used single input values and ranges
-  const [usedSingleValues, setUsedSingleValues] = useState([]);
-  const [usedRanges, setUsedRanges] = useState([]);
+  // Use the custom hook for value management
+  const {
+    usedSingleValues,
+    usedRanges,
+    allocateSingleValue,
+    deallocateSingleValue,
+    allocateRange,
+    deallocateRange,
+    setUsedSingleValues,
+    setUsedRanges,
+  } = useValueManager();
 
   const proOptions = { hideAttribution: true };
-
-  // Handler to allocate a single input value
-  const allocateSingleValue = useCallback(
-    (newValue) => {
-      setUsedSingleValues((prev) => [...prev, newValue]);
-    },
-    [setUsedSingleValues]
-  );
-
-  // Handler to deallocate a single input value
-  const deallocateSingleValue = useCallback(
-    (oldValue) => {
-      setUsedSingleValues((prev) => prev.filter((val) => val !== oldValue));
-    },
-    [setUsedSingleValues]
-  );
-
-  // Handler to allocate a range
-  const allocateRange = useCallback(
-    (newRange) => {
-      setUsedRanges((prev) => [...prev, newRange]);
-    },
-    [setUsedRanges]
-  );
-
-  // Handler to deallocate a range
-  const deallocateRange = useCallback(
-    (oldRange) => {
-      setUsedRanges((prev) => prev.filter((range) => range !== oldRange));
-    },
-    [setUsedRanges]
-  );
 
   const availableLabels = useMemo(
     () => ALL_LABELS.filter((label) => !usedRanges.includes(label)),
@@ -93,23 +71,30 @@ function App() {
       };
       setEdges((eds) => addEdge(newEdge, eds));
 
-      // Find the source node's value
+      // Find the source node's label
       const sourceNode = nodes.find((node) => node.id === connection.source);
-      const sourceValue = sourceNode ? sourceNode.data.value : "Unknown";
+      const sourceLabel = sourceNode ? sourceNode.data.label : "Unknown";
 
-      // Update the target node's sourceLabels array
+      // Update the target node's sourceLabels array and change node type if necessary
       setNodes((nds) =>
-        nds.map((node) =>
-          node.id === connection.target
-            ? {
-                ...node,
-                data: {
-                  ...node.data,
-                  sourceLabels: [...node.data.sourceLabels, sourceValue],
-                },
-              }
-            : node
-        )
+        nds.map((node) => {
+          if (node.id === connection.target) {
+            // If node is not already a processor node, change its type
+            let newType = node.type;
+            if (node.type !== "processorNode") {
+              newType = "processorNode";
+            }
+            return {
+              ...node,
+              type: newType,
+              data: {
+                ...node.data,
+                sourceLabels: [...node.data.sourceLabels, sourceLabel],
+              },
+            };
+          }
+          return node;
+        })
       );
     },
     [nodes, setEdges, setNodes]
@@ -119,9 +104,7 @@ function App() {
   const onEdgeClick = useCallback(
     (event, edge) => {
       event.preventDefault();
-      const confirmDelete = window.confirm(
-        "Do you want to delete this connection?"
-      );
+      const confirmDelete = window.confirm("Do you want to delete this connection?");
       if (confirmDelete) {
         // Remove the edge
         setEdges((eds) => eds.filter((e) => e.id !== edge.id));
@@ -129,53 +112,37 @@ function App() {
         // Find the target node
         const targetNode = nodes.find((node) => node.id === edge.target);
         if (targetNode) {
-          // Find the source node's value
+          // Find the source node's label
           const sourceNode = nodes.find((n) => n.id === edge.source);
-          const sourceValue = sourceNode ? sourceNode.data.value : "Unknown";
+          const sourceLabel = sourceNode ? sourceNode.data.label : "Unknown";
 
-          // Remove the source value from the target node's sourceLabels array
+          // Remove the source label from the target node's sourceLabels array
           const updatedSourceLabels = targetNode.data.sourceLabels.filter(
-            (label) => label !== sourceValue
+            (label) => label !== sourceLabel
           );
+
+          // If no more source labels, change node type back to 'inputNode'
+          const newType = updatedSourceLabels.length === 0 ? "inputNode" : "processorNode";
 
           setNodes((nds) =>
             nds.map((node) =>
               node.id === edge.target
                 ? {
                     ...node,
+                    type: newType,
                     data: {
                       ...node.data,
                       sourceLabels: updatedSourceLabels,
-                      process:
-                        updatedSourceLabels.length === 0
-                          ? ""
-                          : node.data.process,
+                      process: updatedSourceLabels.length === 0 ? "" : node.data.process,
                     },
                   }
                 : node
             )
           );
-
-          // If no other incoming connections, reset process
-          if (updatedSourceLabels.length === 0 && targetNode.data.process) {
-            setNodes((nds) =>
-              nds.map((node) =>
-                node.id === edge.target
-                  ? {
-                      ...node,
-                      data: {
-                        ...node.data,
-                        process: "",
-                      },
-                    }
-                  : node
-              )
-            );
-          }
         }
       }
     },
-    [edges, nodes, setEdges, setNodes]
+    [nodes, setEdges, setNodes]
   );
 
   // Function to add a new node
@@ -183,7 +150,7 @@ function App() {
     const newNodeId = (nodes.length + 1).toString();
     const newNode = {
       id: newNodeId,
-      type: "customNode",
+      type: "inputNode",
       position: { x: Math.random() * 400, y: Math.random() * 400 },
       data: {
         label: `Node ${newNodeId}`,
@@ -206,15 +173,45 @@ function App() {
           if (node.id === id) {
             // Clone the node data
             const newData = { ...node.data };
+            const oldLabel = node.data.label;
+            const oldValue = node.data.value;
 
             // Handle uniqueness based on field and data type
+            if (field === "label") {
+              // Update label and propagate to connected processor nodes
+              newData.label = value;
+
+              // Find all outgoing edges from this node
+              const outgoingEdges = edges.filter((edge) => edge.source === id);
+
+              // Update all connected processor nodes
+              outgoingEdges.forEach((edge) => {
+                const targetNode = nds.find((n) => n.id === edge.target);
+                if (targetNode && targetNode.type === "processorNode") {
+                  // Update the target node's sourceLabels
+                  setNodes((prevNodes) =>
+                    prevNodes.map((n) => {
+                      if (n.id === edge.target) {
+                        const updatedSourceLabels = n.data.sourceLabels.map((label) =>
+                          label === oldLabel ? value : label
+                        );
+                        return {
+                          ...n,
+                          data: {
+                            ...n.data,
+                            sourceLabels: updatedSourceLabels,
+                          },
+                        };
+                      }
+                      return n;
+                    })
+                  );
+                }
+              });
+            }
+
             if (field === "value" && node.data.dataType === "single") {
               const newValue = value;
-
-              // Deallocate the old value first
-              if (node.data.value && node.data.value !== newValue) {
-                deallocateSingleValue(node.data.value);
-              }
 
               // Check if the newValue is already used
               if (usedSingleValues.includes(newValue)) {
@@ -222,6 +219,11 @@ function App() {
                   `The value "${newValue}" is already in use. Please choose a unique value.`
                 );
                 return node; // Prevent update
+              }
+
+              // Deallocate the old value first
+              if (oldValue && oldValue !== newValue) {
+                deallocateSingleValue(oldValue);
               }
 
               // Allocate the new value
@@ -238,20 +240,20 @@ function App() {
               if (from && to) {
                 const newRange = `${from}:${to}`;
 
-                // Deallocate the old range first
-                if (node.data.from && node.data.to) {
-                  const oldRange = `${node.data.from}:${node.data.to}`;
-                  if (oldRange !== newRange) {
-                    deallocateRange(oldRange);
-                  }
-                }
-
                 // Check if the newRange is already used
                 if (usedRanges.includes(newRange)) {
                   alert(
                     `The range "${newRange}" is already in use. Please choose a unique range.`
                   );
                   return node; // Prevent update
+                }
+
+                // Deallocate the old range first
+                if (node.data.from && node.data.to) {
+                  const oldRange = `${node.data.from}:${node.data.to}`;
+                  if (oldRange !== newRange) {
+                    deallocateRange(oldRange);
+                  }
                 }
 
                 // Allocate the new range
@@ -291,22 +293,8 @@ function App() {
               }
             }
 
-            if (field === "process") {
+            if (node.type === "processorNode" && field === "process") {
               newData.process = value;
-
-              // Update the value based on the selected process and sourceLabels
-              if (value && node.data.sourceLabels.length > 0) {
-                const processedValue = `${value}(${node.data.sourceLabels.join(
-                  ", "
-                )})`;
-                newData.value = processedValue;
-              } else if (!value && node.data.sourceLabels.length > 0) {
-                // If no process is selected, default to "Process(x)"
-                const processedValue = `Process(${node.data.sourceLabels.join(
-                  ", "
-                )})`;
-                newData.value = processedValue;
-              }
             }
 
             return {
@@ -319,12 +307,14 @@ function App() {
       );
     },
     [
-      usedSingleValues,
-      usedRanges,
-      allocateSingleValue,
-      deallocateSingleValue,
+      edges,
       allocateRange,
+      allocateSingleValue,
       deallocateRange,
+      deallocateSingleValue,
+      usedRanges,
+      usedSingleValues,
+      setNodes,
     ]
   );
 
@@ -344,6 +334,37 @@ function App() {
       }
 
       const connectedEdges = getConnectedEdges([nodeToDelete], edges);
+
+      // Update target nodes' sourceLabels by removing the deleted node's label
+      connectedEdges.forEach((edge) => {
+        const targetNode = nodes.find((n) => n.id === edge.target);
+        if (targetNode) {
+          const updatedSourceLabels = targetNode.data.sourceLabels.filter(
+            (label) => label !== nodeToDelete.data.label
+          );
+
+          // If no more source labels, change node type back to 'inputNode'
+          const newType = updatedSourceLabels.length === 0 ? "inputNode" : targetNode.type;
+
+          setNodes((prevNodes) =>
+            prevNodes.map((n) =>
+              n.id === edge.target
+                ? {
+                    ...n,
+                    type: newType,
+                    data: {
+                      ...n.data,
+                      sourceLabels: updatedSourceLabels,
+                      process:
+                        updatedSourceLabels.length === 0 ? "" : n.data.process,
+                    },
+                  }
+                : n
+            )
+          );
+        }
+      });
+
       setNodes((nds) => nds.filter((node) => node.id !== nodeId));
       setEdges((eds) =>
         eds.filter((edge) => !connectedEdges.some((ce) => ce.id === edge.id))
@@ -386,15 +407,11 @@ function App() {
           if (flow.nodes && flow.edges) {
             // Extract all used single values and ranges from loaded nodes
             const loadedSingleValues = flow.nodes
-              .filter(
-                (node) => node.data.dataType === "single" && node.data.value
-              )
+              .filter((node) => node.data.dataType === "single" && node.data.value)
               .map((node) => node.data.value);
 
             const loadedRanges = flow.nodes
-              .filter(
-                (node) => node.data.dataType === "range" && node.data.value
-              )
+              .filter((node) => node.data.dataType === "range" && node.data.value)
               .map((node) => node.data.value);
 
             setUsedSingleValues(loadedSingleValues);
@@ -413,7 +430,7 @@ function App() {
         fileReader.readAsText(event.target.files[0]);
       }
     },
-    [setNodes, setEdges]
+    [setNodes, setEdges, setUsedSingleValues, setUsedRanges]
   );
 
   // Function to clear all nodes and edges
@@ -449,17 +466,34 @@ function App() {
       </div>
       <ReactFlowProvider>
         <ReactFlow
-          nodes={nodes.map((node) => ({
-            ...node,
-            data: {
+          nodes={nodes.map((node) => {
+            const commonData = {
               ...node.data,
               onChange: handleNodeDataChange,
               onDelete: deleteNode,
-              isConnected: nodesWithIncoming.has(node.id),
-              processList: PROCESS_LIST, // Pass processList to CustomNode
-              availableLabels: availableLabels, // For range selection
-            },
-          }))}
+            };
+            if (node.type === "inputNode") {
+              return {
+                ...node,
+                data: {
+                  ...commonData,
+                  isConnected: nodesWithIncoming.has(node.id),
+                  availableLabels: availableLabels,
+                },
+              };
+            } else if (node.type === "processorNode") {
+              return {
+                ...node,
+                data: {
+                  ...commonData,
+                  processList: PROCESS_LIST,
+                  sourceLabels: node.data.sourceLabels,
+                },
+              };
+            } else {
+              return node;
+            }
+          })}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
