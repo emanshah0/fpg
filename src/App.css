@@ -43,3 +43,9 @@ body {
   border: 1px solid #555;
   border-radius: 4px;
 }
+
+.react-flow__edge-path:hover {
+  stroke: #ff4d4d !important; /* Change edge color on hover */
+  stroke-width: 3px !important; /* Increase edge width on hover */
+  cursor: pointer; /* Indicate interactivity */
+}

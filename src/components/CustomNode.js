@@ -4,7 +4,7 @@ import { Handle, Position } from 'react-flow-renderer';
 import './CustomNode.css';
 
 const CustomNode = ({ id, data }) => {
-  const { label, value, onChange, onDelete, isConnected, processList } = data;
+  const { label, value, onChange, onDelete, isConnected, processList, sourceLabel } = data;
 
   const handleLabelChange = (e) => {
     onChange(id, 'label', e.target.value);
@@ -20,8 +20,11 @@ const CustomNode = ({ id, data }) => {
 
   return (
     <div className="custom-node">
+      {/* Target Handle */}
       <Handle type="target" position={Position.Top} className="handle" />
+      
       <div className="node-content">
+        {/* Label Input */}
         <div className="input-group">
           <label htmlFor={`label-${id}`}>Label:</label>
           <input
@@ -31,21 +34,36 @@ const CustomNode = ({ id, data }) => {
             onChange={handleLabelChange}
             className="nodrag"
             placeholder="Enter label"
-            disabled={isConnected}
+            disabled={isConnected} // Disable if connected
           />
         </div>
+
+        {/* Value Input */}
         <div className="input-group">
           <label htmlFor={`value-${id}`}>Value:</label>
           <input
             id={`value-${id}`}
             name="value"
-            value={isConnected ? `Processed: ${data.process || 'None'}` : value}
+            value={
+              isConnected
+                ? `${data.process ? data.process : 'Process'}(${sourceLabel || 'Unknown'})`
+                : value
+            }
             className="nodrag"
             placeholder="Enter value"
-            disabled={isConnected}
+            disabled={isConnected} // Disable if connected
           />
         </div>
-        {!isConnected && (
+
+        {/* Process Indicator (Visible When Connected) */}
+        {isConnected && (
+          <div className="process-indicator">
+            <strong>Process:</strong> {data.process || 'None'}
+          </div>
+        )}
+
+        {/* Process Selection Dropdown (Visible When Connected) */}
+        {isConnected && (
           <div className="input-group">
             <label htmlFor={`process-${id}`}>Process:</label>
             <select
@@ -66,15 +84,14 @@ const CustomNode = ({ id, data }) => {
             </select>
           </div>
         )}
-        {isConnected && (
-          <div className="process-indicator">
-            <strong>Process:</strong> {data.process || 'None'}
-          </div>
-        )}
+
+        {/* Delete Button */}
         <button className="delete-button" onClick={handleDelete}>
           Delete
         </button>
       </div>
+
+      {/* Source Handle */}
       <Handle type="source" position={Position.Bottom} className="handle" />
     </div>
   );

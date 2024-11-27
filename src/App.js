@@ -7,6 +7,7 @@ import ReactFlow, {
   useNodesState,
   useEdgesState,
   addEdge,
+  removeElements,
   getConnectedEdges,
   Position,
 } from 'react-flow-renderer';
@@ -25,14 +26,61 @@ function App() {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   const onConnect = useCallback(
-    (connection) =>
-      setEdges((eds) =>
-        addEdge(
-          { ...connection, id: `edge-${Date.now()}`, animated: false },
-          eds
+    (connection) => {
+      // Add the new edge
+      const newEdge = { ...connection, id: `edge-${Date.now()}`, animated: false };
+      setEdges((eds) => addEdge(newEdge, eds));
+
+      // Find the source node's label
+      const sourceNode = nodes.find((node) => node.id === connection.source);
+      const sourceLabel = sourceNode ? sourceNode.data.label : 'Unknown';
+
+      // Update the target node's data with the source label
+      setNodes((nds) =>
+        nds.map((node) =>
+          node.id === connection.target
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  sourceLabel: sourceLabel,
+                },
+              }
+            : node
         )
-      ),
-    [setEdges]
+      );
+    },
+    [nodes, setEdges, setNodes]
+  );
+
+  const onEdgeClick = useCallback(
+    (event, edge) => {
+      event.preventDefault();
+      const confirmDelete = window.confirm('Do you want to delete this connection?');
+      if (confirmDelete) {
+        setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+
+        // Optionally, reset the target node's sourceLabel if no other incoming edges exist
+        const connectedEdges = edges.filter((e) => e.target === edge.target && e.id !== edge.id);
+        if (connectedEdges.length === 0) {
+          setNodes((nds) =>
+            nds.map((node) =>
+              node.id === edge.target
+                ? {
+                    ...node,
+                    data: {
+                      ...node.data,
+                      sourceLabel: '',
+                      process: '',
+                    },
+                  }
+                : node
+            )
+          );
+        }
+      }
+    },
+    [edges, setEdges, setNodes]
   );
 
   const addNode = useCallback(() => {
@@ -45,6 +93,7 @@ function App() {
         label: `Node ${newNodeId}`,
         value: `Value ${newNodeId}`,
         process: '', // Initialize with no process
+        sourceLabel: '', // Initialize with no source label
       },
     };
     setNodes((nds) => nds.concat(newNode));
@@ -167,6 +216,7 @@ function App() {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onEdgeClick={onEdgeClick}
           nodeTypes={memoizedNodeTypes}
           fitView
           style={{ backgroundColor: '#1e1e1e' }}
