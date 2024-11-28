@@ -73,6 +73,7 @@
   height: 12px;
   background: #555;
   border-radius: 50%;
+  z-index: 5;
 }
 
 small {
@@ -108,71 +109,123 @@ small {
   font-size: 1.1rem;
 }
 
+:root {
+  --blob-offset: 0%;
+  --blob-size: 30%;
+  --blob-color: #22e3e6;
+  --blob-animation-duration: 8s;
+}
+
+/* General Node Styles */
 .processor-node {
-  position: relative; /* Needed for positioning child elements */
+  position: relative; /* Establishes a containing block for absolutely positioned children */
   background-color: #282828;
-  /* border: 2px solid #e67e22; */
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
   color: #ecf0f1;
   font-family: "Arial", sans-serif;
-  padding: 10px;
+  padding: 2px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  overflow: hidden; /* Ensures the blob does not spill out */
+  overflow: visible; /* Allows handles to be visible outside */
 }
 
+/* Blob Container */
+.blob-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Confines the blob within the node */
+  pointer-events: none; /* Allows clicks to pass through */
+  border-radius: 10px;
+  z-index: 0; /* Places blob behind other content */
+}
+
+/* Blob Styles */
+.processor-node .blob {
+  width: var(--blob-size);
+  height: var(--blob-size);
+  background-color: var(--blob-color);
+  animation: blob-border var(--blob-animation-duration) infinite linear;
+  position: absolute;
+  border-radius: 50%; /* Changed to 50% for a perfect circle */
+  opacity: 0.7;
+  filter: blur(8px);
+  top: calc(-1 * var(--blob-offset));
+  left: calc(-1 * var(--blob-offset));
+  transform: translate(-50%, -50%);
+  z-index: 0; /* Ensures blob stays behind content */
+}
+
+/* Keyframes for Blob Animation */
+@keyframes blob-border {
+  0% {
+    top: calc(-1 * var(--blob-offset));
+    left: calc(-1 * var(--blob-offset));
+    transform: translate(-50%, -50%);
+  }
+  25% {
+    top: calc(-1 * var(--blob-offset));
+    left: calc(100% + var(--blob-offset));
+    transform: translate(-50%, -50%);
+  }
+  50% {
+    top: calc(100% + var(--blob-offset));
+    left: calc(100% + var(--blob-offset));
+    transform: translate(-50%, -50%);
+  }
+  75% {
+    top: calc(100% + var(--blob-offset));
+    left: calc(-1 * var(--blob-offset));
+    transform: translate(-50%, -50%);
+  }
+  100% {
+    top: calc(-1 * var(--blob-offset));
+    left: calc(-1 * var(--blob-offset));
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* Processor Node Hover Effect */
 .processor-node:hover {
   transform: scale(1.05);
   box-shadow: 0 6px 10px rgba(0, 0, 0, 0.7);
 }
 
-.processor-node .value {
-  color: #f1c40f;
-  font-weight: bold;
-  font-size: 1.1rem;
-}
-
-.processor-node .blob {
-  position: absolute;
-  z-index: 0; /* Blob should be behind content */
-  width: 20%; /* Relative size */
-  height: 20%;
-  border-radius: 50%;
-  background-color: #ffea00; /* Matches processor node border color */
-  opacity: .8;
-  filter: blur(10px);
-  animation: blob-border 8s infinite linear;
-}
-
-@keyframes blob-border {
-  0% {
-    top: 0%;
-    left: 0%;
-    transform: translate(-50%, -50%);
-  }
-  25% {
-    top: 0%;
-    left: 100%;
-    transform: translate(-50%, -50%);
-  }
-  50% {
-    top: 100%;
-    left: 100%;
-    transform: translate(-50%, -50%);
-  }
-  75% {
-    top: 100%;
-    left: 0%;
-    transform: translate(-50%, -50%);
-  }
-  100% {
-    top: 0%;
-    left: 0%;
-    transform: translate(-50%, -50%);
-  }
-}
-
-.processor-node .node-content {
+/* Processor Node Content */
+.processor-node-content {
   position: relative; /* Ensures content layers over the blob */
+  background-color: #282828;
+  border-radius: 8px;
+  color: #ecf0f1;
+  font-family: "Arial", sans-serif;
+  padding: 10px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   z-index: 1; /* Brings content above the blob */
+  /* overflow is not set to allow handles to be visible */
+}
+
+/* Handle Styles */
+.handle {
+  width: 12px;
+  height: 12px;
+  background: #555;
+  border-radius: 50%;
+  z-index: 5; /* Ensures handles are above other elements */
+  position: absolute; /* Ensures proper placement */
+}
+
+/* Top Handle Positioning */
+.processor-node .handle[data-position="top"] {
+  top: -6px; /* Half of handle's height to center it */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Bottom Handle Positioning */
+.processor-node .handle[data-position="bottom"] {
+  bottom: -6px; /* Half of handle's height to center it */
+  left: 50%;
+  transform: translateX(-50%);
 }
