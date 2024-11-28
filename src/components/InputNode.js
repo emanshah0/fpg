@@ -51,7 +51,7 @@ const InputNode = ({ id, data }) => {
   };
 
   return (
-    <div className="custom-node">
+    <div className="input-node">
       <Handle type="target" position={Position.Top} className="handle" />
       <div className="node-content">
         <div className="input-group">

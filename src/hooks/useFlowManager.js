@@ -1,11 +1,11 @@
 // src/hooks/useFlowManager.js
-import { useState, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useNodesState, useEdgesState, addEdge, getConnectedEdges } from 'react-flow-renderer';
 import useValueManager from './useValueManager';
 import { PROCESS_LIST } from '../components/Processes';
 import { generateLabels } from '../utils/labelGenerator';
 
-const nodeTypes = { inputNode: 'inputNode', processorNode: 'processorNode' };
+// const nodeTypes = { inputNode: 'inputNode', processorNode: 'processorNode' };
 const ALL_LABELS = generateLabels();
 
 const useFlowManager = () => {
@@ -33,7 +33,7 @@ const useFlowManager = () => {
         nds.map((node) => {
           if (node.id === id) {
             const newData = { ...node.data };
-            const oldLabel = node.data.label;
+            // const oldLabel = node.data.label;
             const oldValue = node.data.value;
 
             if (field === 'label') {
@@ -309,7 +309,7 @@ const useFlowManager = () => {
       type: 'inputNode',
       position: { x: Math.random() * 400, y: Math.random() * 400 },
       data: {
-        label: `Node ${newNodeId}`,
+        label: `Node_${newNodeId}`,
         value: '',
         process: '',
         sources: [], // Ensure sources are initialized
@@ -333,7 +333,7 @@ const useFlowManager = () => {
         const targetNode = nodes.find((node) => node.id === edge.target);
         if (targetNode) {
           const sourceNode = nodes.find((n) => n.id === edge.source);
-          const sourceLabel = sourceNode ? sourceNode.data.label : 'Unknown';
+          // const sourceLabel = sourceNode ? sourceNode.data.label : 'Unknown';
           const sourceId = sourceNode ? sourceNode.id : null;
 
           if (sourceId) {

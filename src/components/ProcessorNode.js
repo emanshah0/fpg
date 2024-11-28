@@ -9,7 +9,7 @@ const ProcessorNode = ({ id, data }) => {
   const sourceLabels = sources.map(
     (source) => source.label || "Unnamed Source"
   );
-  const sourceValues = sources.map((source) => source.value || "Unnamed Value");
+  // const sourceValues = sources.map((source) => source.value || "Unnamed Value");
 
   const handleProcessChange = (e) => {
     onChange(id, "process", e.target.value);
@@ -24,7 +24,8 @@ const ProcessorNode = ({ id, data }) => {
     : `Process(${sourceLabels.join(", ")})`;
 
   return (
-    <div className="custom-node">
+    <div className="processor-node">
+      <div className="blob"></div>
       <Handle type="target" position={Position.Top} className="handle" />
       <div className="node-content">
         <div className="input-group">
