@@ -1,7 +1,7 @@
 // src/components/InputNode.js
-import React, { memo } from "react";
-import { Handle, Position } from "react-flow-renderer";
-import "./CustomNode.css";
+import React, { memo } from 'react';
+import { Handle, Position } from 'react-flow-renderer';
+import './CustomNode.css';
 
 const InputNode = ({ id, data }) => {
   const {
@@ -16,55 +16,44 @@ const InputNode = ({ id, data }) => {
     availableLabels,
   } = data;
 
-  // Handle data type change
   const handleDataTypeChange = (e) => {
-    const selectedType = e.target.value;
-    onChange(id, "dataType", selectedType);
+    onChange(id, 'dataType', e.target.value);
   };
 
-  // Handle Label change
   const handleLabelChange = (e) => {
-    onChange(id, "label", e.target.value);
+    onChange(id, 'label', e.target.value);
   };
 
-  // Handle Value change with space replacement for single input
   const handleValueChange = (e) => {
     let inputValue = e.target.value;
-    if (!isConnected && dataType === "single") {
-      // Replace spaces with underscores
-      inputValue = inputValue.replace(/\s+/g, "_");
+    if (!isConnected && dataType === 'single') {
+      inputValue = inputValue.replace(/\s+/g, '_');
     }
-    onChange(id, "value", inputValue);
+    onChange(id, 'value', inputValue);
   };
 
-  // Handle FROM change with validation
   const handleFromChange = (e) => {
     const input = e.target.value.toUpperCase();
     if (/^[A-Z]{0,2}$/.test(input)) {
-      onChange(id, "from", input);
+      onChange(id, 'from', input);
     }
   };
 
-  // Handle TO change with validation
   const handleToChange = (e) => {
     const input = e.target.value.toUpperCase();
     if (/^[A-Z]{0,2}$/.test(input)) {
-      onChange(id, "to", input);
+      onChange(id, 'to', input);
     }
   };
 
-  // Handle Delete button
   const handleDelete = () => {
     onDelete(id);
   };
 
   return (
     <div className="custom-node">
-      {/* Target Handle */}
       <Handle type="target" position={Position.Top} className="handle" />
-
       <div className="node-content">
-        {/* Label Input */}
         <div className="input-group">
           <label htmlFor={`label-${id}`}>Label:</label>
           <input
@@ -77,15 +66,14 @@ const InputNode = ({ id, data }) => {
           />
         </div>
 
-        {/* Data Type Selection */}
         <div className="input-group">
           <label>Data Type:</label>
-          <div className="radio-group">
+          <div className="radio-group nodrag">
             <label>
               <input
                 type="radio"
                 value="single"
-                checked={dataType === "single"}
+                checked={dataType === 'single'}
                 onChange={handleDataTypeChange}
               />
               Single Input
@@ -94,7 +82,7 @@ const InputNode = ({ id, data }) => {
               <input
                 type="radio"
                 value="range"
-                checked={dataType === "range"}
+                checked={dataType === 'range'}
                 onChange={handleDataTypeChange}
               />
               Range/List
@@ -102,8 +90,7 @@ const InputNode = ({ id, data }) => {
           </div>
         </div>
 
-        {/* Value Input */}
-        {dataType === "single" && (
+        {dataType === 'single' && (
           <div className="input-group">
             <label htmlFor={`value-${id}`}>Value:</label>
             <input
@@ -117,8 +104,7 @@ const InputNode = ({ id, data }) => {
           </div>
         )}
 
-        {/* Data Type Specific Inputs */}
-        {dataType === "range" && (
+        {dataType === 'range' && (
           <>
             <div className="input-group">
               <label htmlFor={`from-${id}`}>From:</label>
@@ -148,13 +134,10 @@ const InputNode = ({ id, data }) => {
           </>
         )}
 
-        {/* Delete Button */}
-        <button className="delete-button" onClick={handleDelete}>
+        <button className="delete-button nodrag" onClick={handleDelete}>
           Delete
         </button>
       </div>
-
-      {/* Source Handle */}
       <Handle type="source" position={Position.Bottom} className="handle" />
     </div>
   );
