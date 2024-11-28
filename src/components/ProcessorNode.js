@@ -1,13 +1,18 @@
 // src/components/ProcessorNode.js
-import React, { memo } from 'react';
-import { Handle, Position } from 'react-flow-renderer';
-import './CustomNode.css';
+import React, { memo } from "react";
+import { Handle, Position } from "react-flow-renderer";
+import "./CustomNode.css";
 
 const ProcessorNode = ({ id, data }) => {
-  const { label, onChange, onDelete, processList, sourceLabels, process } = data;
+  const { label, onChange, onDelete, processList, process } = data;
+  const { sources = [] } = data; // Default to empty array if sources is undefined
+  const sourceLabels = sources.map(
+    (source) => source.label || "Unnamed Source"
+  );
+  const sourceValues = sources.map((source) => source.value || "Unnamed Value");
 
   const handleProcessChange = (e) => {
-    onChange(id, 'process', e.target.value);
+    onChange(id, "process", e.target.value);
   };
 
   const handleDelete = () => {
@@ -15,8 +20,8 @@ const ProcessorNode = ({ id, data }) => {
   };
 
   const displayValue = process
-    ? `${process}(${sourceLabels.join(', ')})`
-    : `Process(${sourceLabels.join(', ')})`;
+    ? `${process}(${sourceLabels.join(", ")})`
+    : `Process(${sourceLabels.join(", ")})`;
 
   return (
     <div className="custom-node">
@@ -37,7 +42,7 @@ const ProcessorNode = ({ id, data }) => {
           <select
             id={`process-${id}`}
             name="process"
-            value={process || ''}
+            value={process || ""}
             onChange={handleProcessChange}
             className="nodrag"
           >
