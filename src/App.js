@@ -104,7 +104,9 @@ function App() {
   const onEdgeClick = useCallback(
     (event, edge) => {
       event.preventDefault();
-      const confirmDelete = window.confirm("Do you want to delete this connection?");
+      const confirmDelete = window.confirm(
+        "Do you want to delete this connection?"
+      );
       if (confirmDelete) {
         // Remove the edge
         setEdges((eds) => eds.filter((e) => e.id !== edge.id));
@@ -122,7 +124,8 @@ function App() {
           );
 
           // If no more source labels, change node type back to 'inputNode'
-          const newType = updatedSourceLabels.length === 0 ? "inputNode" : "processorNode";
+          const newType =
+            updatedSourceLabels.length === 0 ? "inputNode" : "processorNode";
 
           setNodes((nds) =>
             nds.map((node) =>
@@ -133,7 +136,10 @@ function App() {
                     data: {
                       ...node.data,
                       sourceLabels: updatedSourceLabels,
-                      process: updatedSourceLabels.length === 0 ? "" : node.data.process,
+                      process:
+                        updatedSourceLabels.length === 0
+                          ? ""
+                          : node.data.process,
                     },
                   }
                 : node
@@ -192,8 +198,8 @@ function App() {
                   setNodes((prevNodes) =>
                     prevNodes.map((n) => {
                       if (n.id === edge.target) {
-                        const updatedSourceLabels = n.data.sourceLabels.map((label) =>
-                          label === oldLabel ? value : label
+                        const updatedSourceLabels = n.data.sourceLabels.map(
+                          (label) => (label === oldLabel ? value : label)
                         );
                         return {
                           ...n,
@@ -344,7 +350,8 @@ function App() {
           );
 
           // If no more source labels, change node type back to 'inputNode'
-          const newType = updatedSourceLabels.length === 0 ? "inputNode" : targetNode.type;
+          const newType =
+            updatedSourceLabels.length === 0 ? "inputNode" : targetNode.type;
 
           setNodes((prevNodes) =>
             prevNodes.map((n) =>
@@ -407,11 +414,15 @@ function App() {
           if (flow.nodes && flow.edges) {
             // Extract all used single values and ranges from loaded nodes
             const loadedSingleValues = flow.nodes
-              .filter((node) => node.data.dataType === "single" && node.data.value)
+              .filter(
+                (node) => node.data.dataType === "single" && node.data.value
+              )
               .map((node) => node.data.value);
 
             const loadedRanges = flow.nodes
-              .filter((node) => node.data.dataType === "range" && node.data.value)
+              .filter(
+                (node) => node.data.dataType === "range" && node.data.value
+              )
               .map((node) => node.data.value);
 
             setUsedSingleValues(loadedSingleValues);
