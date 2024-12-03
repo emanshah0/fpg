@@ -25,7 +25,12 @@ const ProcessorNode = ({ id, data }) => {
   return (
     <div className="processor-node">
       {/* Top Handle */}
-      <Handle type="target" position={Position.Top} className="handle" />
+      <Handle
+        type="target"
+        position={Position.Top}
+        className="handle"
+        data-position="top" /* Added for specific styling */
+      />
 
       {/* Blob Container */}
       <div className="blob-container">
@@ -71,7 +76,12 @@ const ProcessorNode = ({ id, data }) => {
         </div>
 
         {/* Bottom Handle */}
-        <Handle type="source" position={Position.Bottom} className="handle" />
+        <Handle
+          type="source"
+          position={Position.Bottom}
+          className="handle"
+          data-position="bottom" /* Added for specific styling */
+        />
       </div>
     </div>
   );

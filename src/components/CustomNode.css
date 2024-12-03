@@ -68,13 +68,6 @@
   background-color: #e60000;
 }
 
-.handle {
-  width: 12px;
-  height: 12px;
-  background: #555;
-  border-radius: 50%;
-  z-index: 5;
-}
 
 small {
   color: #aaa;
@@ -96,6 +89,7 @@ small {
   font-family: "Arial", sans-serif;
   padding: 10px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  width:260px;
 }
 
 .input-node:hover {
@@ -111,9 +105,9 @@ small {
 
 :root {
   --blob-offset: 0%;
-  --blob-size: 30%;
+  --blob-size: 90%;
   --blob-color: #22e3e6;
-  --blob-animation-duration: 8s;
+  --blob-animation-duration: 5s;
 }
 
 /* General Node Styles */
