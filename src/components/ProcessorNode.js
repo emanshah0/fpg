@@ -1,7 +1,7 @@
 // src/components/ProcessorNode.js
 import React, { memo } from "react";
 import { Handle, Position } from "react-flow-renderer";
-import "./CustomNode.css";
+import "./ProcessNode.css";
 
 const ProcessorNode = ({ id, data }) => {
   const { label, onChange, onDelete, processList, process } = data;

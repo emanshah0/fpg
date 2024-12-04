@@ -1,7 +1,7 @@
 // src/components/InputNode.js
 import React, { memo } from 'react';
 import { Handle, Position } from 'react-flow-renderer';
-import './CustomNode.css';
+import './InputNode.css';
 
 const InputNode = ({ id, data }) => {
   const {
