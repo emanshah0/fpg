@@ -2,16 +2,20 @@
   display: flex;
   flex-direction: column;
 }
+.nodrag {
+  pointer-events: auto;
+}
 
 :root {
   --blob-offset: 0%;
-  --blob-size: 90%;
-  --blob-color: #22e3e6;
+  --blob-size: 50%;
+  --blob-color: #ffe100;
   --blob-animation-duration: 5s;
 }
 
 /* General Node Styles */
 .processor-node {
+  width:260px;
   position: relative; /* Establishes a containing block for absolutely positioned children */
   background-color: #282828;
   border-radius: 8px;

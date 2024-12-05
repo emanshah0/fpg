@@ -1,57 +1,62 @@
 // src/components/InputNode.js
 import React, { memo } from 'react';
 import { Handle, Position } from 'react-flow-renderer';
-import './InputNode.css';
+import '../css/InputNode.css';
 
 const InputNode = ({ id, data }) => {
   const {
     label,
     value,
-    onChange,
-    onDelete,
+    handleNodeChange,
+    handleDelete,
     isConnected,
     dataType,
     from,
     to,
-    availableLabels,
   } = data;
 
   const handleDataTypeChange = (e) => {
-    onChange(id, 'dataType', e.target.value);
+    handleNodeChange(id, 'dataType', e.target.value);
   };
 
   const handleLabelChange = (e) => {
-    onChange(id, 'label', e.target.value);
+    if (!isConnected) {
+      handleNodeChange(id, 'label', e.target.value);
+    }
   };
 
   const handleValueChange = (e) => {
-    let inputValue = e.target.value;
     if (!isConnected && dataType === 'single') {
+      let inputValue = e.target.value;
       inputValue = inputValue.replace(/\s+/g, '_');
+      handleNodeChange(id, 'value', inputValue);
     }
-    onChange(id, 'value', inputValue);
   };
 
   const handleFromChange = (e) => {
-    const input = e.target.value.toUpperCase();
-    if (/^[A-Z]{0,2}$/.test(input)) {
-      onChange(id, 'from', input);
+    if (!isConnected) {
+      const input = e.target.value.toUpperCase();
+      if (/^[A-Z]{0,2}$/.test(input)) {
+        handleNodeChange(id, 'from', input);
+      }
     }
   };
 
   const handleToChange = (e) => {
-    const input = e.target.value.toUpperCase();
-    if (/^[A-Z]{0,2}$/.test(input)) {
-      onChange(id, 'to', input);
+    if (!isConnected) {
+      const input = e.target.value.toUpperCase();
+      if (/^[A-Z]{0,2}$/.test(input)) {
+        handleNodeChange(id, 'to', input);
+      }
     }
   };
 
-  const handleDelete = () => {
-    onDelete(id);
+  const handleDeleteClick = () => {
+    handleDelete(id);
   };
 
   return (
-    <div className="input-node">
+    <div className={`input-node ${isConnected ? 'disabled' : ''}`}>
       <Handle type="target" position={Position.Top} className="handle" />
       <div className="node-content">
         <div className="input-group">
@@ -63,6 +68,7 @@ const InputNode = ({ id, data }) => {
             onChange={handleLabelChange}
             className="nodrag"
             placeholder="Enter label"
+            disabled={isConnected}
           />
         </div>
 
@@ -75,6 +81,7 @@ const InputNode = ({ id, data }) => {
                 value="single"
                 checked={dataType === 'single'}
                 onChange={handleDataTypeChange}
+                disabled={isConnected}
               />
               Single Input
             </label>
@@ -84,6 +91,7 @@ const InputNode = ({ id, data }) => {
                 value="range"
                 checked={dataType === 'range'}
                 onChange={handleDataTypeChange}
+                disabled={isConnected}
               />
               Range/List
             </label>
@@ -100,6 +108,7 @@ const InputNode = ({ id, data }) => {
               onChange={handleValueChange}
               className="nodrag"
               placeholder="Enter value"
+              disabled={isConnected}
             />
           </div>
         )}
@@ -116,6 +125,7 @@ const InputNode = ({ id, data }) => {
                 className="nodrag"
                 placeholder="e.g., A"
                 maxLength={2}
+                disabled={isConnected}
               />
             </div>
             <div className="input-group">
@@ -128,13 +138,14 @@ const InputNode = ({ id, data }) => {
                 className="nodrag"
                 placeholder="e.g., ZZ"
                 maxLength={2}
+                disabled={isConnected}
               />
             </div>
             <small>Use uppercase letters only. Maximum 2 letters.</small>
           </>
         )}
 
-        <button className="delete-button nodrag" onClick={handleDelete}>
+        <button className="delete-button nodrag" onClick={handleDeleteClick}>
           Delete
         </button>
       </div>

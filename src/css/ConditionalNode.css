@@ -1,0 +1,64 @@
+/* src/components/ConditionalNode.css */
+
+.conditional-node {
+  background-color: #212121; /* Dark blue-gray for input nodes */
+  border: 2px solid #db8734; /* Blue border for input nodes */
+  border-radius: 8px; /* Smooth corners */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5); /* Subtle shadow for depth */
+  color: #ecf0f1; /* Light text for contrast */
+  font-family: "Arial", sans-serif;
+  padding: 10px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  width:260px;
+  }
+  
+  .conditional-node .node-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .conditional-node .input-group {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .conditional-node label {
+    font-size: 12px;
+    margin-bottom: 2px;
+  }
+  
+  .conditional-node input {
+    padding: 4px 6px;
+    border: 1px solid #555;
+    border-radius: 3px;
+    background-color: #3a3a3a;
+    color: #fff;
+  }
+  
+  .conditional-node input:disabled {
+    background-color: #555;
+  }
+  
+  .conditional-node .delete-button {
+    background-color: #e74c3c;
+    color: #fff;
+    border: none;
+    padding: 6px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.3s;
+  }
+  
+  .conditional-node .delete-button:hover {
+    background-color: #c0392b;
+  }
+  
+  .true-handle {
+    background-color: #2ecc71; /* Green for true */
+  }
+  
+  .false-handle {
+    background-color: #e74c3c; /* Red for false */
+  }

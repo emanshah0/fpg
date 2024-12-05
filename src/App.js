@@ -2,11 +2,18 @@
 import React from 'react';
 import ReactFlow, { Controls, Background, ReactFlowProvider } from 'react-flow-renderer';
 import InputNode from './components/InputNode';
-import ProcessorNode from './components/ProcessorNode';
+import CalculationNode from './components/CalculationNode';
+import ConditionalNode from './components/ConditionalNode';
+import SelectTypeNode from './components/SelectTypeNode';
 import useFlowManager from './hooks/useFlowManager';
 import './App.css';
 
-const nodeTypes = { inputNode: InputNode, processorNode: ProcessorNode };
+const nodeTypes = { 
+  inputNode: InputNode, 
+  calculationNode: CalculationNode, 
+  conditionalNode: ConditionalNode,
+  selectTypeNode: SelectTypeNode,
+};
 
 function App() {
   const {
@@ -23,7 +30,7 @@ function App() {
   } = useFlowManager();
 
   return (
-    <div style={{ height: '100vh' }}>
+    <div style={{ height: '100vh', backgroundColor: '#1e1e1e' }}>
       <div className="button-group">
         <button onClick={addNode} className="add-node-button">
           Add Node
@@ -47,7 +54,7 @@ function App() {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onEdgeClick={onEdgeClick}
-          nodeTypes={nodeTypes}
+          nodeTypes={nodeTypes} // Use nodeTypes directly
           fitView
           style={{ backgroundColor: '#1e1e1e' }}
           proOptions={{ hideAttribution: true }}
