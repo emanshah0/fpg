@@ -1,17 +1,19 @@
 // src/components/CalculationNode.js
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Handle, Position } from "react-flow-renderer";
 import "../css/CalculationNode.css"; // Updated import path
 
+export const getRandomLight = () => {
+  const hue = Math.floor(Math.random() * 20) + 70;
+  const saturation = 0;
+  const lightness = Math.floor(Math.random() * 30) + 180;
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+};
+
 const CalculationNode = ({ id, data }) => {
-  const {
-    label,
-    processType,
-    inputs,
-    handleNodeChange,
-    handleDelete,
-    isConnected,
-  } = data;
+  const { label, processType, handleNodeChange, handleDelete, isConnected } =
+    data;
+  const [blobColor, setBlobColor] = useState("#ffe100"); // Default green shade
 
   const handleLabelChange = (e) => {
     if (!isConnected) {
@@ -31,7 +33,12 @@ const CalculationNode = ({ id, data }) => {
     handleDelete(id);
   };
 
-  // Determine available processes based on number of inputs
+  useEffect(() => {
+    const newColor = getRandomLight();
+    setBlobColor(newColor);
+  }, []);
+
+  // Available processes for abstraction
   const availableProcesses = [
     { value: "sum", label: "Sum" },
     { value: "subtract", label: "Subtract" },
@@ -42,26 +49,14 @@ const CalculationNode = ({ id, data }) => {
     // Add more processes as needed
   ];
 
-  // Disable process selection if not enough inputs
-  const isProcessSelectable =
-    (processType === "sum" && inputs.length >= 2) ||
-    (processType === "subtract" && inputs.length >= 2) ||
-    (processType === "multiply" && inputs.length >= 2) ||
-    (processType === "divide" && inputs.length >= 2) ||
-    (processType === "average" && inputs.length >= 1) ||
-    (processType === "concat" && inputs.length >= 1) ||
-    processType === "";
-
   return (
-    <div className={`processor-node ${isConnected ? "disabled" : ""}`}>
+    <div className={`calculation-node ${isConnected ? "disabled" : ""}`}>
       <Handle type="target" position={Position.Top} className="handle" />
-
-      {/* Blob Container */}
       <div className="blob-container">
-        <div className="blob"></div>
+        <div className="blob" style={{ backgroundColor: blobColor }}></div>
       </div>
 
-      <div className="processor-node-content">
+      <div className="calculation-node-content">
         <div className="node-content">
           <div className="input-group">
             <label htmlFor={`label-${id}`}>Label:</label>
@@ -82,7 +77,7 @@ const CalculationNode = ({ id, data }) => {
               id={`processType-${id}`}
               value={processType}
               onChange={handleProcessTypeChange}
-              disabled={isConnected || !isProcessSelectable}
+              disabled={isConnected}
               onClick={(e) => e.stopPropagation()} // Prevents drag on click
               className="nodrag"
             >

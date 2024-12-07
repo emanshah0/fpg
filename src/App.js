@@ -24,9 +24,9 @@ function App() {
     onConnect,
     onEdgeClick,
     addNode,
-    saveFlow,
     loadFlow,
     clearAll,
+    exportFlow,
   } = useFlowManager();
 
   return (
@@ -35,8 +35,8 @@ function App() {
         <button onClick={addNode} className="add-node-button">
           Add Node
         </button>
-        <button onClick={saveFlow} className="save-flow-button">
-          Save Flow
+        <button onClick={exportFlow} className="load-flow-button">
+          Export Flow
         </button>
         <label htmlFor="load-flow" className="load-flow-button">
           Load Flow

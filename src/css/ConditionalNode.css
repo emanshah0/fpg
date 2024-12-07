@@ -1,64 +1,128 @@
-/* src/components/ConditionalNode.css */
-
 .conditional-node {
-  background-color: #212121; /* Dark blue-gray for input nodes */
-  border: 2px solid #db8734; /* Blue border for input nodes */
-  border-radius: 8px; /* Smooth corners */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5); /* Subtle shadow for depth */
-  color: #ecf0f1; /* Light text for contrast */
+  width: 200px;
+  position: relative;
+  background-color: #282828;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+  color: #ecf0f1;
   font-family: "Arial", sans-serif;
-  padding: 10px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  width:260px;
+  padding: 2px;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  overflow: visible;
+}
+
+.conditional-node .node-content {
+  position: relative; /* Ensures content layers over the blob */
+  background-color: #282828;
+  border-radius: 8px;
+  color: #ecf0f1;
+  font-family: "Arial", sans-serif;
+  padding: 6px;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  z-index: 1;
+}
+
+.conditional-node .input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.conditional-node label {
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+
+.conditional-node input {
+  padding: 4px 6px;
+  border: 1px solid #555;
+  border-radius: 3px;
+  background-color: #3a3a3a;
+  color: #fff;
+}
+
+.conditional-node input:disabled {
+  background-color: #555;
+}
+
+.conditional-node .delete-button {
+  background-color: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 6px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.3s;
+}
+
+.conditional-node .delete-button:hover {
+  background-color: #c0392b;
+}
+
+.true-handle {
+  background-color: #2ecc71; /* Green for true */
+}
+
+.false-handle {
+  background-color: #e74c3c; /* Red for false */
+}
+
+/* Blob Container */
+.blob-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Confines the blob within the node */
+  pointer-events: none; /* Allows clicks to pass through */
+  border-radius: 10px;
+  z-index: 0; /* Places blob behind other content */
+}
+
+/* Blob Styles */
+.conditional-node .blob {
+  width: 200px;
+  height: 200px;
+  background-color: #2ecc71;
+  animation: conditional-blob-border 2.5s infinite linear;
+  position: absolute;
+  border-radius: 0; /* Changed to 50% for a perfect circle */
+  opacity: 0.7;
+  filter: blur(30px);
+  z-index: 0; /* Ensures blob stays behind content */
+}
+
+/* Keyframes for Blob Animation - Bouncing Left to Right to Left */
+@keyframes conditional-blob-border {
+  0% {
+    left: -120%;
+    transform: translate(0%, 0%) scale(.5);
   }
-  
-  .conditional-node .node-content {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  50% {
+    left: 0%;
+    transform: translate(0%, 0%) scale(2);
   }
-  
-  .conditional-node .input-group {
-    display: flex;
-    flex-direction: column;
+  100% {
+    left: 120%;
+    transform: translate(0%, 0%) scale(.5);
   }
-  
-  .conditional-node label {
-    font-size: 12px;
-    margin-bottom: 2px;
-  }
-  
-  .conditional-node input {
-    padding: 4px 6px;
-    border: 1px solid #555;
-    border-radius: 3px;
-    background-color: #3a3a3a;
-    color: #fff;
-  }
-  
-  .conditional-node input:disabled {
-    background-color: #555;
-  }
-  
-  .conditional-node .delete-button {
-    background-color: #e74c3c;
-    color: #fff;
-    border: none;
-    padding: 6px 8px;
-    border-radius: 3px;
-    cursor: pointer;
-    font-size: 12px;
-    transition: background-color 0.3s;
-  }
-  
-  .conditional-node .delete-button:hover {
-    background-color: #c0392b;
-  }
-  
-  .true-handle {
-    background-color: #2ecc71; /* Green for true */
-  }
-  
-  .false-handle {
-    background-color: #e74c3c; /* Red for false */
-  }
+}
+
+/* Processor Node Hover Effect */
+.conditional-node:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.7);
+}
+
+/* Processor Node Content */
+.conditional-node-content {
+  position: relative; /* Ensures content layers over the blob */
+  background-color: #282828;
+  border-radius: 8px;
+  color: #ecf0f1;
+  font-family: "Arial", sans-serif;
+  padding: 8px;
+  transition: transform 0.15s ease, box-shadow 0.1s ease;
+  z-index: 1; /* Brings content above the blob */
+}

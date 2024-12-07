@@ -48,7 +48,7 @@
   
   .process-indicator {
     margin-bottom: 10px;
-    font-size: 14px;
+    font-size: 12px;
     color: #ffcc00;
   }
   
@@ -71,7 +71,7 @@
   
   small {
     color: #aaa;
-    font-size: 10px;
+    font-size: 12px;
   }
   
   .error-message {
@@ -82,14 +82,15 @@
   
   .input-node {
     background-color: #212121; /* Dark blue-gray for input nodes */
-    border: 2px solid #3498db; /* Blue border for input nodes */
+    border: 1px solid #cd4949; /* Blue border for input nodes */
     border-radius: 8px; /* Smooth corners */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5); /* Subtle shadow for depth */
     color: #ecf0f1; /* Light text for contrast */
     font-family: "Arial", sans-serif;
     padding: 10px;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    width:260px;
+    width:180px;
+    font-size: 12px;
   }
   
   .input-node:hover {
@@ -100,5 +101,6 @@
   .input-node .value {
     color: #15312b; /* Distinct green for values */
     font-weight: bold;
-    font-size: 1.1rem;
+    font-size: 12px;
+
   }

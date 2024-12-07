@@ -1,6 +1,7 @@
 .node-content {
   display: flex;
   flex-direction: column;
+  
 }
 .nodrag {
   pointer-events: auto;
@@ -9,13 +10,11 @@
 :root {
   --blob-offset: 0%;
   --blob-size: 50%;
-  --blob-color: #ffe100;
-  --blob-animation-duration: 5s;
+  --blob-animation-duration: 4s;
 }
 
-/* General Node Styles */
-.processor-node {
-  width:260px;
+.calculation-node {
+  width:200px;
   position: relative; /* Establishes a containing block for absolutely positioned children */
   background-color: #282828;
   border-radius: 8px;
@@ -24,7 +23,9 @@
   font-family: "Arial", sans-serif;
   padding: 2px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  overflow: visible; /* Allows handles to be visible outside */
+  overflow: visible; 
+  font-size: 12px;
+
 }
 
 /* Blob Container */
@@ -34,26 +35,25 @@
   left: 0;
   width: 100%;
   height: 100%;
-  overflow: hidden; /* Confines the blob within the node */
-  pointer-events: none; /* Allows clicks to pass through */
+  overflow: hidden;
+  pointer-events: none; 
   border-radius: 10px;
-  z-index: 0; /* Places blob behind other content */
+  z-index: 0; 
 }
 
 /* Blob Styles */
-.processor-node .blob {
+.calculation-node .blob {
   width: var(--blob-size);
   height: var(--blob-size);
-  background-color: var(--blob-color);
   animation: blob-border var(--blob-animation-duration) infinite linear;
   position: absolute;
-  border-radius: 50%; /* Changed to 50% for a perfect circle */
+  border-radius: 50%;
   opacity: 0.7;
   filter: blur(8px);
   top: calc(-1 * var(--blob-offset));
   left: calc(-1 * var(--blob-offset));
   transform: translate(-50%, -50%);
-  z-index: 0; /* Ensures blob stays behind content */
+  z-index: 0;
 }
 
 /* Keyframes for Blob Animation */
@@ -86,13 +86,13 @@
 }
 
 /* Processor Node Hover Effect */
-.processor-node:hover {
+.calculation-node:hover {
   transform: scale(1.05);
   box-shadow: 0 6px 10px rgba(0, 0, 0, 0.7);
 }
 
 /* Processor Node Content */
-.processor-node-content {
+.calculation-node-content {
   position: relative; /* Ensures content layers over the blob */
   background-color: #282828;
   border-radius: 8px;
@@ -100,8 +100,8 @@
   font-family: "Arial", sans-serif;
   padding: 10px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  z-index: 1; /* Brings content above the blob */
-  /* overflow is not set to allow handles to be visible */
+  z-index: 1;
+  
 }
 
 /* Handle Styles */
@@ -115,14 +115,14 @@
 }
 
 /* Top Handle Positioning */
-.processor-node .handle[data-position="top"] {
+.calculation-node .handle[data-position="top"] {
   top: -6px; /* Half of handle's height to center it */
   left: 50%;
   transform: translateX(-50%);
 }
 
 /* Bottom Handle Positioning */
-.processor-node .handle[data-position="bottom"] {
+.calculation-node .handle[data-position="bottom"] {
   bottom: -6px; /* Half of handle's height to center it */
   left: 50%;
   transform: translateX(-50%);

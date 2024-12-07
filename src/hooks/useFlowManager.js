@@ -1,7 +1,7 @@
 // src/hooks/useFlowManager.js
 import { useNodesState, useEdgesState, addEdge } from 'react-flow-renderer';
 import { useCallback } from 'react';
-import BaseNode from '../components/BaseNode'; // Corrected import path
+import BaseNode from '../components/BaseNode';
 import { v4 as uuidv4 } from 'uuid';
 
 const useFlowManager = () => {
@@ -17,7 +17,6 @@ const useFlowManager = () => {
           const baseNode = new BaseNode(node.id, type, node.position, {
             handleNodeChange,
             handleDelete,
-            ...node.data,
           });
           baseNode.setType(type);
           return baseNode.toNodeObject();
@@ -30,11 +29,16 @@ const useFlowManager = () => {
   // Function to add a new SelectTypeNode
   const addNode = () => {
     const id = `node_${uuidv4()}`;
-    const newNode = new BaseNode(id, 'selectTypeNode', { x: Math.random() * 250, y: Math.random() * 250 }, {
-      setNodeType,
-      handleNodeChange,
-      handleDelete,
-    }).toNodeObject();
+    const newNode = new BaseNode(
+      id,
+      'selectTypeNode',
+      { x: Math.random() * 250, y: Math.random() * 250 },
+      {
+        setNodeType,
+        handleNodeChange,
+        handleDelete,
+      }
+    ).toNodeObject();
     setNodes((nds) => nds.concat(newNode));
   };
 
@@ -72,12 +76,12 @@ const useFlowManager = () => {
                 },
               };
             }
-            if (field === 'value') {
+            if (field === 'condition') {
               return {
                 ...node,
                 data: {
                   ...node.data,
-                  sourceValue: value,
+                  sourceCondition: value,
                 },
               };
             }
@@ -100,17 +104,35 @@ const useFlowManager = () => {
   };
 
   // Handle connections between nodes
-  const onConnect = useCallback(
+  const onConnectHandler = useCallback(
     (params) => {
+      const { source, target } = params;
+
+      // Prevent connecting a node to itself
+      if (source === target) {
+        alert("Cannot connect a node to itself.");
+        return;
+      }
+
+      // Check for existing connection to prevent duplicates
+      const existingEdge = edges.find(
+        (e) => e.source === source && e.target === target
+      );
+      if (existingEdge) {
+        alert("Connection already exists.");
+        return;
+      }
+
+      // Update source node's outputs
       setNodes((nds) =>
         nds.map((node) => {
-          if (node.id === params.target) {
+          if (node.id === source) {
+            const updatedOutputs = [...(node.data.outputs || []), target];
             return {
               ...node,
               data: {
                 ...node.data,
-                inputs: [...(node.data.inputs || []), params.source],
-                isConnected: true,
+                outputs: Array.from(new Set(updatedOutputs)), // Ensure uniqueness
               },
             };
           }
@@ -118,19 +140,59 @@ const useFlowManager = () => {
         })
       );
 
+      // Update target node's inputs
+      setNodes((nds) =>
+        nds.map((node) => {
+          if (node.id === target) {
+            const updatedInputs = [...(node.data.inputs || []), source];
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                inputs: Array.from(new Set(updatedInputs)), // Ensure uniqueness
+                isConnected: updatedInputs.length > 0,
+              },
+            };
+          }
+          return node;
+        })
+      );
+
+      // Add the edge
       setEdges((eds) => addEdge(params, eds));
     },
-    [setNodes, setEdges]
+    [edges, setNodes, setEdges]
   );
 
   // Handle edge deletion
-  const onEdgeClick = (_, edge) => {
+  const onEdgeClickHandler = (_, edge) => {
+    const { source, target } = edge;
+
+    // Remove the edge
     setEdges((eds) => eds.filter((e) => e.id !== edge.id));
-    // Update node inputs when an edge is removed
+
+    // Update source node's outputs
     setNodes((nds) =>
       nds.map((node) => {
-        if (node.id === edge.target) {
-          const updatedInputs = node.data.inputs.filter((input) => input !== edge.source);
+        if (node.id === source) {
+          const updatedOutputs = node.data.outputs.filter((id) => id !== target);
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              outputs: updatedOutputs,
+            },
+          };
+        }
+        return node;
+      })
+    );
+
+    // Update target node's inputs
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === target) {
+          const updatedInputs = node.data.inputs.filter((id) => id !== source);
           return {
             ...node,
             data: {
@@ -163,15 +225,26 @@ const useFlowManager = () => {
   const saveFlow = () => {
     const flow = { nodes, edges };
     localStorage.setItem('flow', JSON.stringify(flow));
+    alert('Flow saved to localStorage!');
   };
 
   // Load the flow from a JSON file
   const loadFlow = (event) => {
     const fileReader = new FileReader();
     fileReader.onload = () => {
-      const flow = JSON.parse(fileReader.result);
-      setNodes(flow.nodes || []);
-      setEdges(flow.edges || []);
+      try {
+        const flow = JSON.parse(fileReader.result);
+        if (flow.nodes && flow.edges) {
+          setNodes(flow.nodes);
+          setEdges(flow.edges);
+          alert('Flow loaded successfully!');
+        } else {
+          alert('Invalid flow file!');
+        }
+      } catch (error) {
+        console.error('Error loading flow:', error);
+        alert('Failed to load flow. Please ensure the file is valid JSON.');
+      }
     };
     if (event.target.files[0]) {
       fileReader.readAsText(event.target.files[0]);
@@ -180,8 +253,23 @@ const useFlowManager = () => {
 
   // Clear all nodes and edges
   const clearAll = () => {
-    setNodes([]);
-    setEdges([]);
+    if (window.confirm('Are you sure you want to clear all nodes and edges?')) {
+      setNodes([]);
+      setEdges([]);
+    }
+  };
+
+  // Export flow as JSON
+  const exportFlow = () => {
+    const flow = { nodes, edges };
+    const dataStr = JSON.stringify(flow, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'flow.json';
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   return {
@@ -189,12 +277,13 @@ const useFlowManager = () => {
     edges,
     onNodesChange: onNodesChangeHandler,
     onEdgesChange: onEdgesChangeHandler,
-    onConnect,
-    onEdgeClick,
+    onConnect: onConnectHandler,
+    onEdgeClick: onEdgeClickHandler,
     addNode,
     saveFlow,
     loadFlow,
     clearAll,
+    exportFlow,
     setNodeType,
     handleNodeChange,
     handleDelete,
