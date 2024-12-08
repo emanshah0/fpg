@@ -1,0 +1,30 @@
+/* src/css/edges.css */
+
+/* Style for all edge paths */
+.react-flow__edge-path {
+    stroke-width: 5px !important; /* Set default thickness */
+    stroke: #ffffff !important;    /* Set default color to white */
+    transition: all .4s;
+
+  }
+  
+  /* Hover effect for edge paths */
+  .react-flow__edge-path:hover {
+    stroke: #2ecc71 !important; /* Change color to green on hover */
+    stroke-width: 6px !important; /* Increase thickness on hover */
+    stroke-dasharray: 0 !important; /* Ensure solid lines */
+
+  }
+  
+  /* Style for arrow markers */
+  .react-flow__marker {
+    fill: #ffffff !important; /* Match arrow color with edge color */
+    stroke: #ffffff !important; /* Match arrow stroke color */
+    transition: fill 0.5s ease, stroke 0.5s ease;
+  }
+  
+  /* Customize arrow size */
+  .react-flow__edge-markerend {
+    width: 5px;  /* Increased size for better visibility */
+    height: 5px;
+  }

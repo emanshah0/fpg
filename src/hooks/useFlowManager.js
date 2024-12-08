@@ -1,8 +1,8 @@
 // src/hooks/useFlowManager.js
-import { useNodesState, useEdgesState, addEdge } from 'react-flow-renderer';
-import { useCallback } from 'react';
-import BaseNode from '../components/BaseNode';
-import { v4 as uuidv4 } from 'uuid';
+import { useNodesState, useEdgesState, addEdge } from "react-flow-renderer";
+import { useCallback } from "react";
+import BaseNode from "../components/BaseNode";
+import { v4 as uuidv4 } from "uuid";
 
 const useFlowManager = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -31,7 +31,7 @@ const useFlowManager = () => {
     const id = `node_${uuidv4()}`;
     const newNode = new BaseNode(
       id,
-      'selectTypeNode',
+      "selectTypeNode",
       { x: Math.random() * 250, y: Math.random() * 250 },
       {
         setNodeType,
@@ -67,7 +67,7 @@ const useFlowManager = () => {
       setNodes((nds) =>
         nds.map((node) => {
           if (node.id === targetId) {
-            if (field === 'label') {
+            if (field === "label") {
               return {
                 ...node,
                 data: {
@@ -76,7 +76,7 @@ const useFlowManager = () => {
                 },
               };
             }
-            if (field === 'condition') {
+            if (field === "condition") {
               return {
                 ...node,
                 data: {
@@ -175,7 +175,9 @@ const useFlowManager = () => {
     setNodes((nds) =>
       nds.map((node) => {
         if (node.id === source) {
-          const updatedOutputs = node.data.outputs.filter((id) => id !== target);
+          const updatedOutputs = node.data.outputs.filter(
+            (id) => id !== target
+          );
           return {
             ...node,
             data: {
@@ -224,26 +226,41 @@ const useFlowManager = () => {
   // Save the current flow to localStorage
   const saveFlow = () => {
     const flow = { nodes, edges };
-    localStorage.setItem('flow', JSON.stringify(flow));
-    alert('Flow saved to localStorage!');
+    localStorage.setItem("flow", JSON.stringify(flow));
+    alert("Flow saved to localStorage!");
   };
 
-  // Load the flow from a JSON file
   const loadFlow = (event) => {
     const fileReader = new FileReader();
     fileReader.onload = () => {
       try {
         const flow = JSON.parse(fileReader.result);
         if (flow.nodes && flow.edges) {
+          // First, set the raw nodes and edges
           setNodes(flow.nodes);
           setEdges(flow.edges);
-          alert('Flow loaded successfully!');
+
+          // Now reattach the functions to each node
+          setNodes((nds) =>
+            nds.map((node) => {
+              // Recreate the node using BaseNode to ensure handlers are reattached
+              const baseNode = new BaseNode(node.id, node.type, node.position, {
+                ...node.data,
+                handleNodeChange,
+                handleDelete,
+                setNodeType,
+              });
+              return baseNode.toNodeObject();
+            })
+          );
+
+          alert("Flow loaded successfully!");
         } else {
-          alert('Invalid flow file!');
+          alert("Invalid flow file!");
         }
       } catch (error) {
-        console.error('Error loading flow:', error);
-        alert('Failed to load flow. Please ensure the file is valid JSON.');
+        console.error("Error loading flow:", error);
+        alert("Failed to load flow. Please ensure the file is valid JSON.");
       }
     };
     if (event.target.files[0]) {
@@ -253,7 +270,7 @@ const useFlowManager = () => {
 
   // Clear all nodes and edges
   const clearAll = () => {
-    if (window.confirm('Are you sure you want to clear all nodes and edges?')) {
+    if (window.confirm("Are you sure you want to clear all nodes and edges?")) {
       setNodes([]);
       setEdges([]);
     }
@@ -263,11 +280,11 @@ const useFlowManager = () => {
   const exportFlow = () => {
     const flow = { nodes, edges };
     const dataStr = JSON.stringify(flow, null, 2);
-    const blob = new Blob([dataStr], { type: 'application/json' });
+    const blob = new Blob([dataStr], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
-    link.download = 'flow.json';
+    link.download = "flow.json";
     link.click();
     URL.revokeObjectURL(url);
   };

@@ -7,6 +7,7 @@ import ConditionalNode from './components/ConditionalNode';
 import SelectTypeNode from './components/SelectTypeNode';
 import useFlowManager from './hooks/useFlowManager';
 import './App.css';
+import './css/edges.css';       
 
 const nodeTypes = { 
   inputNode: InputNode, 
@@ -28,6 +29,19 @@ function App() {
     clearAll,
     exportFlow,
   } = useFlowManager();
+
+  // Define default edge options
+  const defaultEdgeOptions = {
+    style: {
+      stroke: '#ffffff', // Edge color
+    },
+    animated: true, // Set to true if you want animated edges
+    markerEnd: {
+      type: 'arrowclosed', // Type of arrow at the end
+      color: '#ffffff', // Color of the arrow
+    },
+    // Optional: Define arrow size and other properties
+  };
 
   return (
     <div style={{ height: '100vh', backgroundColor: '#1e1e1e' }}>
@@ -54,7 +68,8 @@ function App() {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onEdgeClick={onEdgeClick}
-          nodeTypes={nodeTypes} // Use nodeTypes directly
+          nodeTypes={nodeTypes}
+          defaultEdgeOptions={defaultEdgeOptions} // Apply default edge styles
           fitView
           style={{ backgroundColor: '#1e1e1e' }}
           proOptions={{ hideAttribution: true }}
