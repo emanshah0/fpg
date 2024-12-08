@@ -1,19 +1,10 @@
 // src/components/CalculationNode.js
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Handle, Position } from "react-flow-renderer";
 import "../css/CalculationNode.css"; // Updated import path
 
-export const getRandomLight = () => {
-  const hue = Math.floor(Math.random() * 20) + 70;
-  const saturation = 0;
-  const lightness = Math.floor(Math.random() * 30) + 180;
-  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-};
-
 const CalculationNode = ({ id, data }) => {
-  const { label, processType, handleNodeChange, handleDelete, isConnected } =
-    data;
-  const [blobColor, setBlobColor] = useState("#ffe100"); // Default green shade
+  const { label, processType, handleNodeChange, handleDelete, isConnected } = data;
 
   const handleLabelChange = (e) => {
     if (!isConnected) {
@@ -33,11 +24,6 @@ const CalculationNode = ({ id, data }) => {
     handleDelete(id);
   };
 
-  useEffect(() => {
-    const newColor = getRandomLight();
-    setBlobColor(newColor);
-  }, []);
-
   // Available processes for abstraction
   const availableProcesses = [
     { value: "sum", label: "Sum" },
@@ -51,13 +37,18 @@ const CalculationNode = ({ id, data }) => {
 
   return (
     <div className={`calculation-node ${isConnected ? "disabled" : ""}`}>
+      {/* Target Handle */}
       <Handle type="target" position={Position.Top} className="handle" />
+
+      {/* Blob Container */}
       <div className="blob-container">
-        <div className="blob" style={{ backgroundColor: blobColor }}></div>
+        <div className="blob"></div>
       </div>
 
+      {/* Node Content */}
       <div className="calculation-node-content">
         <div className="node-content">
+          {/* Label Input */}
           <div className="input-group">
             <label htmlFor={`label-${id}`}>Label:</label>
             <input
@@ -71,6 +62,7 @@ const CalculationNode = ({ id, data }) => {
             />
           </div>
 
+          {/* Process Type Selection */}
           <div className="input-group">
             <label htmlFor={`processType-${id}`}>Process Type:</label>
             <select
@@ -92,12 +84,14 @@ const CalculationNode = ({ id, data }) => {
             </select>
           </div>
 
+          {/* Delete Button */}
           <button className="delete-button nodrag" onClick={handleDeleteClick}>
             Delete
           </button>
         </div>
       </div>
 
+      {/* Source Handle */}
       <Handle type="source" position={Position.Bottom} className="handle" />
     </div>
   );

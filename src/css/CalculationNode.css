@@ -1,21 +1,8 @@
-.node-content {
-  display: flex;
-  flex-direction: column;
-  
-}
-.nodrag {
-  pointer-events: auto;
-}
-
-:root {
-  --blob-offset: 0%;
-  --blob-size: 50%;
-  --blob-animation-duration: 4s;
-}
+/* src/css/CalculationNode.css */
 
 .calculation-node {
-  width:200px;
-  position: relative; /* Establishes a containing block for absolutely positioned children */
+  width: 260px;
+  position: relative;
   background-color: #282828;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
@@ -23,9 +10,80 @@
   font-family: "Arial", sans-serif;
   padding: 2px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  overflow: visible; 
-  font-size: 12px;
+  overflow: visible;
+}
 
+.calculation-node.disabled {
+  opacity: 0.6;
+}
+
+.calculation-node .node-content {
+  position: relative; /* Ensures content layers over the blob */
+  background-color: #282828;
+  border-radius: 8px;
+  color: #ecf0f1;
+  font-family: "Arial", sans-serif;
+  padding: 10px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  z-index: 1;
+}
+
+.calculation-node .input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px; /* Add spacing between input groups */
+}
+
+.calculation-node label {
+  font-size: 14px;
+  margin-bottom: 4px; /* Slightly increased margin for better spacing */
+}
+
+.calculation-node input,
+.calculation-node select {
+  padding: 6px 8px; /* Increased padding for better usability */
+  border: 1px solid #555;
+  border-radius: 4px; /* Slightly more rounded corners */
+  background-color: #3a3a3a;
+  color: #fff;
+  font-size: 14px; /* Consistent font size */
+}
+
+.calculation-node select:disabled,
+.calculation-node input:disabled {
+  background-color: #555;
+}
+
+.calculation-node .delete-button {
+  background-color: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 6px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.3s;
+}
+
+.calculation-node .delete-button:hover {
+  background-color: #c0392b;
+}
+
+.handle {
+  width: 12px;
+  height: 12px;
+  background: #555;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  z-index: 10;
+}
+
+.true-handle {
+  background-color: #2ecc71; /* Green for true */
+}
+
+.false-handle {
+  background-color: #e74c3c; /* Red for false */
 }
 
 /* Blob Container */
@@ -35,95 +93,61 @@
   left: 0;
   width: 100%;
   height: 100%;
-  overflow: hidden;
-  pointer-events: none; 
+  overflow: hidden; /* Confines the blob within the node */
+  pointer-events: none; /* Allows clicks to pass through */
   border-radius: 10px;
-  z-index: 0; 
+  z-index: 0; /* Places blob behind other content */
 }
 
 /* Blob Styles */
-.calculation-node .blob {
-  width: var(--blob-size);
-  height: var(--blob-size);
-  animation: blob-border var(--blob-animation-duration) infinite linear;
+.blob {
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  opacity: 0;
+  animation: none;
   position: absolute;
-  border-radius: 50%;
-  opacity: 0.7;
-  filter: blur(8px);
-  top: calc(-1 * var(--blob-offset));
-  left: calc(-1 * var(--blob-offset));
-  transform: translate(-50%, -50%);
-  z-index: 0;
+  border-radius: 50%; /* Ensures the blob is a perfect circle */
+  filter: blur(40px);
+  z-index: 0; /* Ensures blob stays behind content */
+  transition: opacity 0.3s ease; /* Smooth transition for opacity */
 }
 
-/* Keyframes for Blob Animation */
-@keyframes blob-border {
-  0% {
-    top: calc(-1 * var(--blob-offset));
-    left: calc(-1 * var(--blob-offset));
-    transform: translate(-50%, -50%);
-  }
-  25% {
-    top: calc(-1 * var(--blob-offset));
-    left: calc(100% + var(--blob-offset));
-    transform: translate(-50%, -50%);
-  }
-  50% {
-    top: calc(100% + var(--blob-offset));
-    left: calc(100% + var(--blob-offset));
-    transform: translate(-50%, -50%);
-  }
-  75% {
-    top: calc(100% + var(--blob-offset));
-    left: calc(-1 * var(--blob-offset));
-    transform: translate(-50%, -50%);
-  }
-  100% {
-    top: calc(-1 * var(--blob-offset));
-    left: calc(-1 * var(--blob-offset));
-    transform: translate(-50%, -50%);
-  }
+/* Blob Animation on Hover */
+.calculation-node:hover .blob {
+  opacity: 0.7; /* Visible on hover */
+  animation: calculation-blob-border 2s infinite linear; /* Start animation */
 }
 
-/* Processor Node Hover Effect */
+/* Calculation Node Hover Effect */
 .calculation-node:hover {
   transform: scale(1.05);
   box-shadow: 0 6px 10px rgba(0, 0, 0, 0.7);
 }
 
-/* Processor Node Content */
+/* Calculation Node Content */
 .calculation-node-content {
   position: relative; /* Ensures content layers over the blob */
   background-color: #282828;
   border-radius: 8px;
   color: #ecf0f1;
   font-family: "Arial", sans-serif;
-  padding: 10px;
+  padding: 8px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  z-index: 1;
-  
+  z-index: 1; /* Brings content above the blob */
 }
 
-/* Handle Styles */
-.handle {
-  width: 12px;
-  height: 12px;
-  background: #555;
-  border-radius: 50%;
-  z-index: 5; /* Ensures handles are above other elements */
-  position: absolute; /* Ensures proper placement */
-}
-
-/* Top Handle Positioning */
-.calculation-node .handle[data-position="top"] {
-  top: -6px; /* Half of handle's height to center it */
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* Bottom Handle Positioning */
-.calculation-node .handle[data-position="bottom"] {
-  bottom: -6px; /* Half of handle's height to center it */
-  left: 50%;
-  transform: translateX(-50%);
+@keyframes calculation-blob-border {
+  0% {
+    top: -120%;
+    transform: translate(0%, 0%) scale(0.5);
+  }
+  50% {
+    top: 0%;
+    transform: translate(0%, 0%) scale(2);
+  }
+  100% {
+    top: 120%;
+    transform: translate(0%, 0%) scale(0.5);
+  }
 }

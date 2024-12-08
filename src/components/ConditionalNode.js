@@ -3,22 +3,23 @@ import React, { useState, useEffect } from "react";
 import { Handle, Position } from "react-flow-renderer";
 import "../css/ConditionalNode.css";
 
-export const getRandomGreen = () => {
-  const hue = Math.floor(Math.random() * 40) + 160;
-  const saturation = Math.floor(Math.random() * 51) + 60;
-  const lightness = Math.floor(Math.random() * 21) + 40;
-  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-};
+export const predefinedConditions = [
+  { value: "A > B", label: "A > B" },
+  { value: "A < B", label: "A < B" },
+  { value: "A === B", label: "A === B" },
+  { value: "A !== B", label: "A !== B" },
+  { value: "A >= B", label: "A >= B" },
+  { value: "A <= B", label: "A <= B" },
+  { value: "A === 'Yes'", label: "A === 'Yes'" },
+  { value: "A === 'No'", label: "A === 'No'" },
+  { value: "A.includes('test')", label: "A includes 'test'" },
+  { value: "A.startsWith('Start')", label: "A starts with 'Start'" },
+  // Add more conditions as needed
+];
 
 const ConditionalNode = ({ id, data }) => {
   const { label, condition, handleNodeChange, handleDelete, isConnected } =
     data;
-  const [blobColor, setBlobColor] = useState("#2ecc71"); // Default green shade
-
-  useEffect(() => {
-    const newColor = getRandomGreen();
-    setBlobColor(newColor);
-  }, []);
 
   const handleLabelChange = (e) => {
     if (!isConnected) {
@@ -40,7 +41,7 @@ const ConditionalNode = ({ id, data }) => {
     <div className={`conditional-node ${isConnected ? "disabled" : ""}`}>
       <Handle type="target" position={Position.Top} className="handle" />
       <div className="blob-container">
-        <div className="blob" style={{ backgroundColor: blobColor }}></div>
+        <div className="blob" style={{ backgroundColor: "#fff" }}></div>
       </div>
       <div className="conditional-node-content">
         <div className="node-content">
@@ -59,15 +60,23 @@ const ConditionalNode = ({ id, data }) => {
 
           <div className="input-group">
             <label htmlFor={`condition-${id}`}>Condition:</label>
-            <input
+            <select
               id={`condition-${id}`}
               name="condition"
               value={condition}
               onChange={handleConditionChange}
               className="nodrag"
-              placeholder="e.g., A > B"
               disabled={isConnected}
-            />
+            >
+              <option value="" disabled>
+                Select Condition
+              </option>
+              {predefinedConditions.map((cond) => (
+                <option key={cond.value} value={cond.value}>
+                  {cond.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           <button className="delete-button nodrag" onClick={handleDeleteClick}>

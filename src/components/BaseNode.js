@@ -44,7 +44,6 @@ class BaseNode {
       case 'selectTypeNode':
         this.data = {
           ...this.data,
-          // No additional data needed for selectTypeNode
         };
         break;
       default:
